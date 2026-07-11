@@ -251,11 +251,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
             }
 
             const data = result.data;
-
+           
+            /*
             // Show Opening Cash Modal if not set yet
             if (data.opening_cash_set === 0) {
                 document.getElementById('openingCashOverlay').style.display = 'flex';
             }
+            */
 
             // Render Summary Cards
             const cardsRow = document.getElementById('summaryCardsRow');

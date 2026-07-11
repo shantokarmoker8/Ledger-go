@@ -6,15 +6,20 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (!isset($_SESSION['user_id'])) {
-    // If it's an API request, return JSON error
+// Check both user_id AND full_name exist, otherwise force fresh login
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['full_name'])) {
+    // Session is invalid/incomplete - destroy it and force re-login
+    $_SESSION = [];
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
+
     if (strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
         header('Content-Type: application/json');
         http_response_code(401);
         echo json_encode(["status" => "error", "message" => "Unauthorized. Please login."]);
         exit;
     } else {
-        // If it's a page request, redirect to login
         header("Location: login.php");
         exit;
     }

@@ -1,9 +1,22 @@
 <?php
 /**
+ * ================================================
+ * Error Handling Configuration
+ * ================================================
+ * Warning/Error যেন কখনো Browser-এ দেখা না যায় (Design ভাঙবে না)।
+ * কিন্তু Error Log ফাইলে ঠিকই সংরক্ষিত হবে, যাতে Debug করা যায়।
+ */
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/../error_log.txt');
+
+/**
+ * ================================================
  * Database Configuration File
  * XAMPP Default Settings
+ * ================================================
  */
-
 $DB_HOST = "localhost";
 $DB_USER = "root";
 $DB_PASS = "";
