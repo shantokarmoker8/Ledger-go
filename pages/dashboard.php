@@ -1,10 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 ?>
-<!-- ============ DASHBOARD PAGE ============ -->
 <div id="dashboardPage">
 
-    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <h4 class="mb-0" style="font-weight:600;"><?php echo lang('dashboard'); ?></h4>
@@ -12,65 +10,32 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="row g-3 mb-3" id="summaryCardsRow">
-        <!-- Cards injected by JS -->
+    <div class="row g-2 mb-3" id="summaryCardsRow"></div>
+
+    <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap">
+        <button class="ck-btn ck-btn-primary" id="btnAddCustomer">
+            <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
+        </button>
+        <button class="ck-btn ck-btn-outline" id="btnAddSupplier">
+            <i class="fa-solid fa-truck"></i> <?php echo lang('add_supplier'); ?>
+        </button>
     </div>
 
-    <!-- Add Customer / Add Supplier -->
-    <div class="row g-3 mb-3">
-        <div class="col-6 col-md-3">
-            <button class="ck-btn ck-btn-primary w-100 justify-content-center" id="btnAddCustomer">
-                <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
-            </button>
-        </div>
-        <div class="col-6 col-md-3">
-            <button class="ck-btn ck-btn-outline w-100 justify-content-center" id="btnAddSupplier">
-                <i class="fa-solid fa-truck"></i> <?php echo lang('add_supplier'); ?>
-            </button>
-        </div>
-    </div>
-
-    <!-- Recent Purchase / Sales -->
-    <div class="row g-3">
-        <div class="col-lg-6">
-            <div class="ck-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_purchase'); ?></h6>
-                    <i class="fa-solid fa-cart-shopping text-muted"></i>
-                </div>
-                <div id="recentPurchaseList"></div>
+    <div class="recent-grid">
+        <div class="ck-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_purchase'); ?></h6>
+                <i class="fa-solid fa-cart-shopping text-muted"></i>
             </div>
+            <div id="recentPurchaseList"></div>
         </div>
-        <div class="col-lg-6">
-            <div class="ck-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_sales'); ?></h6>
-                    <i class="fa-solid fa-tags text-muted"></i>
-                </div>
-                <div id="recentSalesList"></div>
+        <div class="ck-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_sales'); ?></h6>
+                <i class="fa-solid fa-tags text-muted"></i>
             </div>
+            <div id="recentSalesList"></div>
         </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: OPENING CASH (first time only) ============ -->
-<div class="ck-modal-overlay" id="openingCashOverlay" style="display:none;">
-    <div class="ck-modal-box" style="max-width:420px;">
-        <div class="text-center mb-3">
-            <div style="width:60px;height:60px;background:#eff6ff;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-                <i class="fa-solid fa-sack-dollar" style="font-size:24px;color:#2563eb;"></i>
-            </div>
-            <h5 style="font-weight:600;">Set Opening Cash Balance</h5>
-            <p class="text-muted" style="font-size:13px;">Enter your business's starting cash amount to begin.</p>
-        </div>
-        <form id="openingCashForm">
-            <label class="ck-label">Opening Cash Amount</label>
-            <input type="number" step="0.01" min="0" class="ck-input" id="openingCashInput" placeholder="e.g. 10000" required>
-            <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3">
-                <i class="fa-solid fa-check"></i> Save & Continue
-            </button>
-        </form>
     </div>
 </div>
 
@@ -149,70 +114,39 @@ require_once __DIR__ . '/../includes/auth_check.php';
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
     .summary-card {
-        background: #fff;
-        border: 1px solid var(--border-color);
-        border-radius: 14px;
-        padding: 18px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-        overflow: hidden;
+        background: #fff; border: 1px solid var(--border-color); border-radius: 14px;
+        padding: 16px; cursor: pointer; transition: all 0.2s ease; height: 100%;
+        display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 10px;
     }
     .summary-card:hover { border-color: var(--primary-blue); box-shadow: 0 6px 18px rgba(37,99,235,0.1); transform: translateY(-2px); }
     .summary-card .sc-icon {
-        width: 42px; height: 42px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 16px; margin-bottom: 14px;
+        width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center;
+        justify-content: center; font-size: 15px; flex-shrink: 0;
     }
-    .summary-card .sc-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-    .summary-card .sc-value { font-size: 19px; font-weight: 700; color: var(--text-dark); }
+    .summary-card .sc-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .summary-card .sc-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-card .sc-value { font-size: 16px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .ck-modal-overlay {
-        position: fixed; inset: 0; background: rgba(15,23,42,0.45);
-        z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px;
-    }
-    .ck-modal-box {
-        background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 460px;
-        max-height: 90vh; overflow-y: auto;
-    }
-    .ck-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-    .ck-modal-header h5 { font-weight: 600; margin: 0; }
-    .ck-modal-close { cursor: pointer; color: var(--text-muted); font-size: 16px; transition: color 0.2s ease; }
-    .ck-modal-close:hover { color: var(--danger); }
+    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-    .ck-label { font-size: 12px; font-weight: 500; color: var(--text-dark); display: block; margin-bottom: 6px; }
-    .ck-input, .ck-select {
-        width: 100%; padding: 10px 14px; border: 1.5px solid var(--border-color);
-        border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s ease;
-    }
-    .ck-input:focus, .ck-select:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    @media (max-width: 767px) {
+        .summary-card { flex-direction: column; text-align: center; padding: 10px 6px; gap: 6px; }
+        .summary-card .sc-icon { width: 30px; height: 30px; font-size: 12px; }
+        .summary-card .sc-content { align-items: center; }
+        .summary-card .sc-label { font-size: 9px; white-space: normal; }
+        .summary-card .sc-value { font-size: 12px; }
 
-    .ck-filter-btn {
-        border: 1.5px solid var(--border-color); background: #fff; color: var(--text-muted);
-        padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;
-    }
-    .ck-filter-btn.active { background: var(--primary-blue); border-color: var(--primary-blue); color: #fff; }
-
-    .list-row {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 13px;
-    }
-    .list-row:last-child { border-bottom: none; }
-    .list-row .lr-title { font-weight: 500; color: var(--text-dark); }
-    .list-row .lr-sub { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
-    .list-row .lr-amount { font-weight: 600; }
-    .badge-cash { background: #f0fdf4; color: #16a34a; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-    .badge-due { background: #fff7ed; color: #d97706; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-
-    @media (max-width: 991px) {
-        .summary-card .sc-value { font-size: 16px; }
+        .recent-grid {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px;
+            padding-bottom: 6px; -webkit-overflow-scrolling: touch;
+        }
+        .recent-grid > .ck-card { flex: 0 0 100%; scroll-snap-align: start; }
     }
 </style>
 
 <!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
-    // Card meta configuration (icon, color, label key, type for chart API)
     const cardMeta = [
         { key: 'total_purchase', label: '<?php echo lang('total_purchase'); ?>', icon: 'fa-cart-shopping', color: '#2563eb', bg: '#eff6ff', type: 'purchase' },
         { key: 'total_sales',    label: '<?php echo lang('total_sales'); ?>',    icon: 'fa-tags',          color: '#16a34a', bg: '#f0fdf4', type: 'sales' },
@@ -237,9 +171,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return Math.floor(diff / 86400) + 'd ago';
     }
 
-    /**
-     * Fetch dashboard summary and render everything
-     */
     async function loadDashboard() {
         try {
             const res = await fetch('api/dashboard/summary.php');
@@ -251,39 +182,34 @@ require_once __DIR__ . '/../includes/auth_check.php';
             }
 
             const data = result.data;
-           
-            /*
-            // Show Opening Cash Modal if not set yet
-            if (data.opening_cash_set === 0) {
-                document.getElementById('openingCashOverlay').style.display = 'flex';
-            }
-            */
 
-            // Render Summary Cards
             const cardsRow = document.getElementById('summaryCardsRow');
             cardsRow.innerHTML = cardMeta.map(m => `
-                <div class="col-6 col-lg-4">
+                <div class="col-4">
                     <div class="summary-card" data-type="${m.type}" data-label="${m.label}">
                         <div class="sc-icon" style="background:${m.bg};color:${m.color};">
                             <i class="fa-solid ${m.icon}"></i>
                         </div>
-                        <div class="sc-label">${m.label}</div>
-                        <div class="sc-value">${money(data[m.key])}</div>
+                        <div class="sc-content">
+                            <div class="sc-label">${m.label}</div>
+                            <div class="sc-value">${money(data[m.key])}</div>
+                        </div>
                     </div>
                 </div>
             `).join('');
 
-            gsap.from('.summary-card', { y: 14, opacity: 0, duration: 0.4, stagger: 0.06, ease: "power2.out" });
+            gsap.killTweensOf('.summary-card');
+            gsap.fromTo('.summary-card',
+                { y: 14, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: "power2.out", overwrite: true, clearProps: "opacity,transform" }
+            );
 
-            // Bind card click -> open chart modal
             document.querySelectorAll('.summary-card').forEach(card => {
                 card.addEventListener('click', () => openChartModal(card.dataset.type, card.dataset.label));
             });
 
-            // Update Top Bar Cash Balance
             updateCashBalance(data.cash_balance);
 
-            // Recent Purchase List
             const purchaseBox = document.getElementById('recentPurchaseList');
             if (data.recent_purchases.length === 0) {
                 purchaseBox.innerHTML = `<p class="text-muted text-center py-4" style="font-size:13px;"><?php echo lang('no_data'); ?></p>`;
@@ -302,7 +228,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 `).join('');
             }
 
-            // Recent Sales List
             const salesBox = document.getElementById('recentSalesList');
             if (data.recent_sales.length === 0) {
                 salesBox.innerHTML = `<p class="text-muted text-center py-4" style="font-size:13px;"><?php echo lang('no_data'); ?></p>`;
@@ -320,42 +245,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
                     </div>
                 `).join('');
             }
-
         } catch (err) {
             ckToast('error', 'Something went wrong while loading dashboard');
         }
     }
 
-    /**
-     * Opening Cash Form Submit
-     */
-    document.getElementById('openingCashForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const amount = document.getElementById('openingCashInput').value;
-
-        try {
-            const res = await fetch('api/settings/opening_cash.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount })
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                document.getElementById('openingCashOverlay').style.display = 'none';
-                ckToast('success', result.message);
-                loadDashboard();
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) {
-            ckToast('error', 'Failed to save opening cash');
-        }
-    });
-
-    /**
-     * Modal Open/Close Helpers
-     */
     document.getElementById('btnAddCustomer').addEventListener('click', () => {
         document.getElementById('addCustomerOverlay').style.display = 'flex';
     });
@@ -369,9 +263,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         });
     });
 
-    /**
-     * Add Customer Form Submit
-     */
     document.getElementById('addCustomerForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const payload = {
@@ -379,15 +270,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
             mobile: document.getElementById('customerMobile').value.trim(),
             address: document.getElementById('customerAddress').value.trim()
         };
-
         try {
             const res = await fetch('api/customer/add.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
-
             if (result.status === 'success') {
                 document.getElementById('addCustomerOverlay').style.display = 'none';
                 document.getElementById('addCustomerForm').reset();
@@ -400,9 +287,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /**
-     * Add Supplier Form Submit
-     */
     document.getElementById('addSupplierForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const payload = {
@@ -410,15 +294,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
             mobile: document.getElementById('supplierMobile').value.trim(),
             address: document.getElementById('supplierAddress').value.trim()
         };
-
         try {
             const res = await fetch('api/supplier/add.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
-
             if (result.status === 'success') {
                 document.getElementById('addSupplierOverlay').style.display = 'none';
                 document.getElementById('addSupplierForm').reset();
@@ -431,19 +311,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /**
-     * Chart Modal
-     */
     let currentChartType = 'sales';
 
     async function openChartModal(type, label) {
         currentChartType = type;
         document.getElementById('chartModalTitle').textContent = label;
         document.getElementById('chartOverlay').style.display = 'flex';
-
         document.querySelectorAll('.ck-filter-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('.ck-filter-btn[data-days="7"]').classList.add('active');
-
         await renderChart(type, 7);
     }
 
@@ -459,11 +334,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
         try {
             const res = await fetch(`api/dashboard/chart.php?type=${type}&days=${days}`);
             const result = await res.json();
-
-            if (result.status !== 'success') {
-                ckToast('error', 'Failed to load chart data');
-                return;
-            }
+            if (result.status !== 'success') { ckToast('error', 'Failed to load chart data'); return; }
 
             const ctx = document.getElementById('dashboardChartCanvas').getContext('2d');
             if (dashboardChart) dashboardChart.destroy();
@@ -477,24 +348,15 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 data: {
                     labels: result.labels.length ? result.labels : ['No Data'],
                     datasets: [{
-                        label: type,
-                        data: result.values.length ? result.values : [0],
-                        borderColor: '#2563eb',
-                        backgroundColor: result.chart_type === 'bar' ? 'rgba(37,99,235,0.7)' : 'rgba(37,99,235,0.12)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.35,
-                        borderRadius: 6
+                        label: type, data: result.values.length ? result.values : [0],
+                        borderColor: '#2563eb', backgroundColor: result.chart_type === 'bar' ? 'rgba(37,99,235,0.7)' : 'rgba(37,99,235,0.12)',
+                        borderWidth: 2, fill: true, tension: 0.35, borderRadius: 6
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
                 }
             });
         } catch (err) {
@@ -502,7 +364,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     }
 
-    // Initial Load
     loadDashboard();
 })();
 </script>
