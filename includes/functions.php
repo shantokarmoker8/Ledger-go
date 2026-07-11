@@ -69,3 +69,21 @@ function jsonResponse(bool $success, string $message = '', array $data = []): vo
     echo json_encode(array_merge(['success' => $success, 'message' => $message], $data));
     exit;
 }
+
+// ==== যোগ করুন functions.php ফাইলের শেষে ====
+
+function getLang(): string
+{
+    startSecureSession();
+    return $_SESSION['lang'] ?? 'en';
+}
+
+function loadLangFile(): array
+{
+    $lang = getLang();
+    $path = __DIR__ . "/../lang/{$lang}.json";
+    if (!file_exists($path)) {
+        $path = __DIR__ . "/../lang/en.json";
+    }
+    return json_decode(file_get_contents($path), true) ?? [];
+}
