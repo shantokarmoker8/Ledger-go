@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 ?>
-<!-- ============ EXPENSES PAGE ============ -->
 <div id="expensesPage">
 
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -14,9 +13,8 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </button>
     </div>
 
-    <!-- Total Expenses Summary -->
     <div class="ck-card mb-3" style="display:flex;align-items:center;gap:16px;">
-        <div style="width:46px;height:46px;background:#ecfeff;color:#0891b2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">
+        <div style="width:46px;height:46px;background:#ecfeff;color:#0891b2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
             <i class="fa-solid fa-receipt"></i>
         </div>
         <div>
@@ -25,7 +23,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- Search -->
     <div class="ck-card mb-3">
         <div class="input-group-search">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -33,7 +30,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- Expenses Table -->
     <div class="ck-card p-0">
         <div class="table-responsive">
             <table class="ck-table">
@@ -76,7 +72,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
     </div>
 </div>
 
-<!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
     function money(v) {
@@ -108,10 +103,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
             tbody.innerHTML = result.data.map(e => `
                 <tr>
-                    <td style="font-weight:500;">${e.name}</td>
-                    <td style="font-weight:600;color:var(--danger);">${money(e.amount)}</td>
-                    <td>${formatDate(e.created_at)}</td>
-                    <td><button class="icon-btn ck-btn-danger-soft" onclick="deleteExpense(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${e.name}</td>
+                    <td data-label="<?php echo lang('amount'); ?>" style="font-weight:600;color:var(--danger);">${money(e.amount)}</td>
+                    <td data-label="<?php echo lang('date'); ?>">${formatDate(e.created_at)}</td>
+                    <td data-label="<?php echo lang('action'); ?>"><button class="icon-btn ck-btn-danger-soft" onclick="deleteExpense(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>
             `).join('');
         } catch (err) {
@@ -120,14 +115,12 @@ require_once __DIR__ . '/../includes/auth_check.php';
     }
 
     window.deleteExpense = async function (id) {
-        const confirm = await ckConfirm('This will refund the amount back to your Cash Balance.');
-        if (!confirm.isConfirmed) return;
+        const confirmResult = await ckConfirm('This will refund the amount back to your Cash Balance.');
+        if (!confirmResult.isConfirmed) return;
 
         try {
             const res = await fetch('api/expense/delete.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
             });
             const result = await res.json();
 
@@ -166,9 +159,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         try {
             const res = await fetch('api/expense/add.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
 

@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 ?>
-<!-- ============ PURCHASE PAGE ============ -->
 <div id="purchasePage">
 
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -14,7 +13,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </button>
     </div>
 
-    <!-- Search -->
     <div class="ck-card mb-3">
         <div class="input-group-search">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -22,7 +20,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- Purchase Table -->
     <div class="ck-card p-0">
         <div class="table-responsive">
             <table class="ck-table">
@@ -56,13 +53,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         <form id="newPurchaseForm">
 
-            <!-- Toggle: Existing Product / New Product -->
             <div class="ck-toggle-tabs mb-3">
                 <button type="button" class="ck-toggle-btn active" data-mode="existing">Existing Product</button>
                 <button type="button" class="ck-toggle-btn" data-mode="new">New Product</button>
             </div>
 
-            <!-- Existing Product Select -->
             <div id="existingProductBlock">
                 <label class="ck-label"><?php echo lang('product_name'); ?></label>
                 <select class="ck-select" id="existingProductSelect">
@@ -70,7 +65,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 </select>
             </div>
 
-            <!-- New Product Fields -->
             <div id="newProductBlock" style="display:none;">
                 <label class="ck-label"><?php echo lang('product_name'); ?></label>
                 <input type="text" class="ck-input" id="newProductName">
@@ -126,47 +120,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
     </div>
 </div>
 
-<!-- ============ PAGE-SPECIFIC STYLES ============ -->
-<style>
-    .input-group-search { position: relative; }
-    .input-group-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
-    .input-group-search input {
-        width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid var(--border-color);
-        border-radius: 10px; font-size: 13px; outline: none;
-    }
-    .input-group-search input:focus { border-color: var(--primary-blue); }
-
-    .ck-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .ck-table thead th {
-        text-align: left; padding: 14px 18px; background: #f8fafc; color: var(--text-muted);
-        font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
-        border-bottom: 1px solid var(--border-color); white-space: nowrap;
-    }
-    .ck-table tbody td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); vertical-align: middle; white-space: nowrap; }
-    .ck-table tbody tr:last-child td { border-bottom: none; }
-    .ck-table tbody tr:hover { background: #fafbfd; }
-
-    .ck-toggle-tabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; gap: 4px; }
-    .ck-toggle-btn {
-        flex: 1; border: none; background: transparent; padding: 9px; border-radius: 8px;
-        font-size: 12.5px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
-    }
-    .ck-toggle-btn.active { background: #fff; color: var(--primary-blue); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-
-    .ck-total-box {
-        display: flex; justify-content: space-between; align-items: center;
-        background: var(--light-blue); padding: 12px 16px; border-radius: 10px;
-        font-size: 13px; font-weight: 600; color: var(--primary-blue);
-    }
-
-    .icon-btn {
-        width: 30px; height: 30px; border-radius: 8px; border: none;
-        display: inline-flex; align-items: center; justify-content: center;
-        cursor: pointer; font-size: 12px; transition: all 0.2s ease;
-    }
-</style>
-
-<!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
     let productsCache = [];
@@ -182,7 +135,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
-    /* ============ LOAD PURCHASE LIST ============ */
     async function loadPurchaseList(search = '') {
         const tbody = document.getElementById('purchaseTableBody');
         try {
@@ -193,7 +145,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Failed to load</td></tr>`;
                 return;
             }
-
             if (result.data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
                 return;
@@ -201,14 +152,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
             tbody.innerHTML = result.data.map(p => `
                 <tr>
-                    <td style="font-weight:500;">${p.product_name}</td>
-                    <td>${p.supplier_name ? p.supplier_name : '<span class="text-muted">—</span>'}</td>
-                    <td>${p.quantity}</td>
-                    <td>${money(p.purchase_price)}</td>
-                    <td style="font-weight:600;">${money(p.total_amount)}</td>
-                    <td><span class="${p.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${p.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span></td>
-                    <td>${formatDate(p.created_at)}</td>
-                    <td>
+                    <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${p.product_name}</td>
+                    <td data-label="<?php echo lang('supplier'); ?>">${p.supplier_name ? p.supplier_name : '<span class="text-muted">—</span>'}</td>
+                    <td data-label="<?php echo lang('quantity'); ?>">${p.quantity}</td>
+                    <td data-label="<?php echo lang('purchase_price'); ?>">${money(p.purchase_price)}</td>
+                    <td data-label="<?php echo lang('total_amount'); ?>" style="font-weight:600;">${money(p.total_amount)}</td>
+                    <td data-label="<?php echo lang('payment_type'); ?>"><span class="${p.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${p.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span></td>
+                    <td data-label="<?php echo lang('date'); ?>">${formatDate(p.created_at)}</td>
+                    <td data-label="<?php echo lang('action'); ?>">
                         <button class="icon-btn ck-btn-danger-soft" onclick="deletePurchase(${p.id})"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
@@ -218,16 +169,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     }
 
-    /* ============ DELETE PURCHASE (global for onclick) ============ */
     window.deletePurchase = async function (id) {
-        const confirm = await ckConfirm('This will reverse stock and cash balance for this purchase.');
-        if (!confirm.isConfirmed) return;
+        const confirmResult = await ckConfirm('This will reverse stock and cash balance for this purchase.');
+        if (!confirmResult.isConfirmed) return;
 
         try {
             const res = await fetch('api/purchase/delete.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
             });
             const result = await res.json();
 
@@ -243,7 +191,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     };
 
-    /* ============ SEARCH ============ */
     let searchTimer;
     document.getElementById('purchaseSearch').addEventListener('input', function () {
         clearTimeout(searchTimer);
@@ -251,7 +198,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         searchTimer = setTimeout(() => loadPurchaseList(val), 350);
     });
 
-    /* ============ OPEN NEW PURCHASE MODAL ============ */
     document.getElementById('btnNewPurchase').addEventListener('click', async () => {
         document.getElementById('newPurchaseOverlay').style.display = 'flex';
         document.getElementById('newPurchaseForm').reset();
@@ -280,7 +226,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /* ============ TOGGLE: EXISTING / NEW PRODUCT ============ */
     document.querySelectorAll('#newPurchaseForm .ck-toggle-tabs')[0].querySelectorAll('.ck-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             this.parentElement.querySelectorAll('.ck-toggle-btn').forEach(b => b.classList.remove('active'));
@@ -291,31 +236,22 @@ require_once __DIR__ . '/../includes/auth_check.php';
         });
     });
 
-    /* ============ TOGGLE: CASH / DUE ============ */
     document.querySelectorAll('#newPurchaseForm .ck-toggle-tabs')[1].querySelectorAll('.ck-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             this.parentElement.querySelectorAll('.ck-toggle-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             const type = this.dataset.payment;
-            const paidBlock = document.getElementById('paidAmountBlock');
-            if (type === 'cash') {
-                paidBlock.style.display = 'block';
-            } else {
-                paidBlock.style.display = 'none';
-            }
+            document.getElementById('paidAmountBlock').style.display = type === 'cash' ? 'block' : 'none';
         });
     });
 
-    /* ============ AUTO CALCULATE TOTAL ============ */
     function recalcTotal() {
         const price = parseFloat(document.getElementById('purchasePriceInput').value) || 0;
         const qty = parseFloat(document.getElementById('purchaseQuantityInput').value) || 0;
         const total = price * qty;
         document.getElementById('purchaseTotalDisplay').textContent = money(total);
 
-        // Auto-fill paid amount to total by default (only if cash mode active)
-        const cashActive = document.querySelector('#newPurchaseForm .ck-toggle-tabs')[1] ?
-            document.querySelectorAll('#newPurchaseForm .ck-toggle-tabs')[1].querySelector('.active').dataset.payment === 'cash' : true;
+        const cashActive = document.querySelectorAll('#newPurchaseForm .ck-toggle-tabs')[1].querySelector('.active').dataset.payment === 'cash';
         if (cashActive) {
             document.getElementById('purchasePaidAmountInput').value = total.toFixed(2);
         }
@@ -323,7 +259,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
     document.getElementById('purchasePriceInput').addEventListener('input', recalcTotal);
     document.getElementById('purchaseQuantityInput').addEventListener('input', recalcTotal);
 
-    // Auto-fill purchase price when existing product selected
     document.getElementById('existingProductSelect').addEventListener('change', function () {
         const selected = this.options[this.selectedIndex];
         const price = selected.dataset.price;
@@ -333,14 +268,12 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /* ============ MODAL CLOSE ============ */
     document.querySelectorAll('#newPurchaseOverlay [data-close], #newPurchaseOverlay .ck-modal-close').forEach(el => {
         el.addEventListener('click', function () {
             document.getElementById('newPurchaseOverlay').style.display = 'none';
         });
     });
 
-    /* ============ SUBMIT NEW PURCHASE ============ */
     document.getElementById('newPurchaseForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -357,20 +290,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         if (mode === 'existing') {
             payload.product_id = document.getElementById('existingProductSelect').value;
-            if (!payload.product_id) {
-                ckToast('warning', 'Please select a product');
-                return;
-            }
+            if (!payload.product_id) { ckToast('warning', 'Please select a product'); return; }
         } else {
             payload.product_name = document.getElementById('newProductName').value.trim();
             payload.description = document.getElementById('newProductDescription').value.trim();
             payload.sale_price = document.getElementById('newProductSalePrice').value;
             payload.low_stock_alert = document.getElementById('newProductLowStock').value;
-
-            if (!payload.product_name) {
-                ckToast('warning', 'Please enter product name');
-                return;
-            }
+            if (!payload.product_name) { ckToast('warning', 'Please enter product name'); return; }
         }
 
         const saveBtn = document.getElementById('purchaseSaveBtn');
@@ -379,9 +305,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         try {
             const res = await fetch('api/purchase/add.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
 
@@ -401,7 +325,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /* Initial Load */
     loadPurchaseList();
 })();
 </script>

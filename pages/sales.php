@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 ?>
-<!-- ============ SALES PAGE ============ -->
 <div id="salesPage">
 
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -14,7 +13,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </button>
     </div>
 
-    <!-- Search -->
     <div class="ck-card mb-3">
         <div class="input-group-search">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -22,14 +20,12 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- Product Grid (Sell Mode) -->
     <div id="productGridView">
         <div class="row g-3" id="productGrid">
             <div class="col-12 text-center py-5 text-muted">Loading products...</div>
         </div>
     </div>
 
-    <!-- Sales History Table (Hidden by default) -->
     <div id="salesHistoryView" style="display:none;">
         <div class="ck-card p-0">
             <div class="table-responsive">
@@ -110,7 +106,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
     </div>
 </div>
 
-<!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
     .product-card {
         background: #fff; border: 1px solid var(--border-color); border-radius: 14px;
@@ -131,9 +126,15 @@ require_once __DIR__ . '/../includes/auth_check.php';
         border-radius: 8px; padding: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
     }
     .product-card .pc-sell-btn:hover { background: var(--dark-blue); }
+
+    @media (max-width: 480px) {
+        .product-card { padding: 10px; }
+        .product-card .pc-icon { width: 34px; height: 34px; font-size: 14px; margin-bottom: 8px; }
+        .product-card .pc-name { font-size: 12px; }
+        .product-card .pc-price { font-size: 13px; }
+    }
 </style>
 
-<!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
     let productsCache = [];
@@ -149,13 +150,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
-    /* ============ LOAD PRODUCT GRID ============ */
     async function loadProductGrid(search = '') {
         const grid = document.getElementById('productGrid');
         try {
             const res = await fetch('api/sales/form_data.php');
             const result = await res.json();
-
             if (result.status !== 'success') {
                 grid.innerHTML = `<div class="col-12 text-center py-5 text-danger">Failed to load products</div>`;
                 return;
@@ -189,7 +188,8 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 </div>
             `).join('');
 
-            gsap.from('.product-card', { y: 12, opacity: 0, duration: 0.35, stagger: 0.04, ease: "power2.out" });
+            gsap.killTweensOf('.product-card');
+            gsap.fromTo('.product-card', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.04, ease: "power2.out", overwrite: true, clearProps: "opacity,transform" });
 
             document.querySelectorAll('.pc-sell-btn').forEach(btn => {
                 btn.addEventListener('click', () => openSellModal(parseInt(btn.dataset.id)));
@@ -199,7 +199,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     }
 
-    /* ============ OPEN SELL MODAL ============ */
     function openSellModal(productId) {
         const product = productsCache.find(p => p.id === productId);
         if (!product) return;
@@ -212,9 +211,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
         document.getElementById('sellPriceInput').value = product.sale_price;
         document.getElementById('sellPaidAmountInput').value = 0;
 
-        // Reset payment toggle to cash
-        const tabs = document.querySelectorAll('#sellProductForm .ck-toggle-btn');
-        tabs.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('#sellProductForm .ck-toggle-btn[data-payment="cash"]').classList.add('active');
         document.getElementById('sellPaidAmountBlock').style.display = 'none';
 
@@ -234,7 +231,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
     document.getElementById('sellPriceInput').addEventListener('input', recalcSellTotal);
     document.getElementById('sellQuantityInput').addEventListener('input', recalcSellTotal);
 
-    /* ============ TOGGLE CASH / DUE ============ */
     document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(b => b.classList.remove('active'));
@@ -243,12 +239,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
         });
     });
 
-    /* ============ CLOSE MODAL ============ */
     document.querySelectorAll('#sellProductOverlay [data-close], #sellProductOverlay .ck-modal-close').forEach(el => {
         el.addEventListener('click', () => document.getElementById('sellProductOverlay').style.display = 'none');
     });
 
-    /* ============ SUBMIT SALE ============ */
     document.getElementById('sellProductForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -275,9 +269,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         try {
             const res = await fetch('api/sales/add.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
 
@@ -298,7 +290,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    /* ============ SALES HISTORY ============ */
     async function loadSalesHistory(search = '') {
         const tbody = document.getElementById('salesTableBody');
         try {
@@ -312,14 +303,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
             tbody.innerHTML = result.data.map(s => `
                 <tr>
-                    <td style="font-weight:500;">${s.product_name}</td>
-                    <td>${s.customer_name ? s.customer_name : '<span class="text-muted">Walk-in</span>'}</td>
-                    <td>${s.quantity}</td>
-                    <td>${money(s.sale_price)}</td>
-                    <td style="font-weight:600;">${money(s.total_amount)}</td>
-                    <td><span class="${s.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${s.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span></td>
-                    <td>${formatDate(s.created_at)}</td>
-                    <td><button class="icon-btn ck-btn-danger-soft" onclick="deleteSale(${s.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${s.product_name}</td>
+                    <td data-label="<?php echo lang('customer'); ?>">${s.customer_name ? s.customer_name : '<span class="text-muted">Walk-in</span>'}</td>
+                    <td data-label="<?php echo lang('quantity'); ?>">${s.quantity}</td>
+                    <td data-label="<?php echo lang('sale_price'); ?>">${money(s.sale_price)}</td>
+                    <td data-label="<?php echo lang('total_amount'); ?>" style="font-weight:600;">${money(s.total_amount)}</td>
+                    <td data-label="<?php echo lang('payment_type'); ?>"><span class="${s.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${s.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span></td>
+                    <td data-label="<?php echo lang('date'); ?>">${formatDate(s.created_at)}</td>
+                    <td data-label="<?php echo lang('action'); ?>"><button class="icon-btn ck-btn-danger-soft" onclick="deleteSale(${s.id})"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>
             `).join('');
         } catch (err) {
@@ -328,14 +319,12 @@ require_once __DIR__ . '/../includes/auth_check.php';
     }
 
     window.deleteSale = async function (id) {
-        const confirm = await ckConfirm('This will restore stock and reverse cash balance for this sale.');
-        if (!confirm.isConfirmed) return;
+        const confirmResult = await ckConfirm('This will restore stock and reverse cash balance for this sale.');
+        if (!confirmResult.isConfirmed) return;
 
         try {
             const res = await fetch('api/sales/delete.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
             });
             const result = await res.json();
 
@@ -352,18 +341,15 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     };
 
-    /* ============ TOGGLE GRID / HISTORY VIEW ============ */
     document.getElementById('btnToggleHistory').addEventListener('click', function () {
         historyMode = !historyMode;
         document.getElementById('productGridView').style.display = historyMode ? 'none' : 'block';
         document.getElementById('salesHistoryView').style.display = historyMode ? 'block' : 'none';
         document.getElementById('toggleHistoryText').textContent = historyMode ? 'View Products' : 'View History';
         this.querySelector('i').className = historyMode ? 'fa-solid fa-box' : 'fa-solid fa-clock-rotate-left';
-
         if (historyMode) loadSalesHistory();
     });
 
-    /* ============ SEARCH ============ */
     let searchTimer;
     document.getElementById('salesSearch').addEventListener('input', function () {
         clearTimeout(searchTimer);
@@ -374,7 +360,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }, 350);
     });
 
-    /* Initial Load */
     loadProductGrid();
 })();
 </script>
