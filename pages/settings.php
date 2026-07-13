@@ -6,14 +6,15 @@ $currentLang = $_SESSION['language'] ?? 'en';
 ?>
 <div id="settingsPage">
 
-    <div class="mb-3">
-        <h4 class="mb-0" style="font-weight:600;"><?php echo lang('settings'); ?></h4>
+    <div class="mb-3" style="text-align:center;">
+        <h4 style="font-weight:600;margin-bottom:2px;"><?php echo lang('settings'); ?></h4>
         <p class="text-muted mb-0" style="font-size:13px;">Manage business, cash, users, customers and suppliers</p>
     </div>
 
     <!-- Tabs -->
     <div class="settings-tabs mb-3">
-        <button class="settings-tab active" data-tab="business"><i class="fa-solid fa-store"></i> <?php echo lang('business_info'); ?></button>
+        <button class="settings-tab active" data-tab="account"><i class="fa-solid fa-user"></i> My Account</button>
+        <button class="settings-tab" data-tab="business"><i class="fa-solid fa-store"></i> <?php echo lang('business_info'); ?></button>
         <button class="settings-tab" data-tab="cash"><i class="fa-solid fa-sack-dollar"></i> <?php echo lang('cash_balance'); ?></button>
         <button class="settings-tab" data-tab="users"><i class="fa-solid fa-user-group"></i> Users</button>
         <button class="settings-tab" data-tab="language"><i class="fa-solid fa-language"></i> <?php echo lang('language'); ?></button>
@@ -21,9 +22,35 @@ $currentLang = $_SESSION['language'] ?? 'en';
         <button class="settings-tab" data-tab="suppliers"><i class="fa-solid fa-truck"></i> <?php echo lang('supplier'); ?></button>
     </div>
 
+    <!-- ============ TAB: MY ACCOUNT ============ -->
+    <div class="settings-tab-content active" id="tabAccount">
+        <div class="ck-card" style="max-width:420px;margin:0 auto;">
+            <div class="text-center mb-3">
+                <div class="profile-avatar" style="width:56px;height:56px;font-size:22px;margin:0 auto 10px;" id="myAccountAvatar">
+                    <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'U', 0, 1)); ?>
+                </div>
+                <p class="text-muted mb-0" style="font-size:12px;">Update your own name, username, or password</p>
+            </div>
+            <form id="myAccountForm">
+                <label class="ck-label"><?php echo lang('name'); ?></label>
+                <input type="text" class="ck-input" id="myFullName" value="<?php echo htmlspecialchars($_SESSION['full_name'] ?? ''); ?>" required>
+
+                <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
+                <input type="text" class="ck-input" id="myUsername" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
+
+                <label class="ck-label mt-2"><?php echo lang('password'); ?> <span class="text-muted">(নতুন Password দিতে চাইলে লিখো, না হলে ফাঁকা রাখো)</span></label>
+                <input type="text" class="ck-input" id="myPassword" placeholder="Leave blank to keep current password">
+
+                <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="myAccountSaveBtn">
+                    <i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- ============ TAB: BUSINESS INFO ============ -->
-    <div class="settings-tab-content active" id="tabBusiness">
-        <div class="ck-card" style="max-width:520px;">
+    <div class="settings-tab-content" id="tabBusiness">
+        <div class="ck-card" style="max-width:520px;margin:0 auto;">
             <form id="businessInfoForm">
                 <label class="ck-label"><?php echo lang('business_name'); ?></label>
                 <input type="text" class="ck-input" id="businessNameInput" value="<?php echo htmlspecialchars($settings['business_name']); ?>" required>
@@ -41,7 +68,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
         </div>
     </div>
 
-    <!-- ============ TAB: CASH BALANCE (ADD / WITHDRAW / HISTORY) ============ -->
+    <!-- ============ TAB: CASH BALANCE ============ -->
     <div class="settings-tab-content" id="tabCash">
         <div class="row g-3">
             <div class="col-lg-5">
@@ -103,9 +130,9 @@ $currentLang = $_SESSION['language'] ?? 'en';
         </div>
     </div>
 
-    <!-- ============ TAB: USERS (EMPLOYEE LOGIN) ============ -->
+    <!-- ============ TAB: USERS ============ -->
     <div class="settings-tab-content" id="tabUsers">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="page-head mb-3" style="margin-bottom:16px;">
             <p class="text-muted mb-0" style="font-size:13px;">Add employees who can log in to this system.</p>
             <button class="ck-btn ck-btn-primary" id="btnAddUser">
                 <i class="fa-solid fa-user-plus"></i> Add User
@@ -132,7 +159,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
     <!-- ============ TAB: LANGUAGE ============ -->
     <div class="settings-tab-content" id="tabLanguage">
-        <div class="ck-card" style="max-width:520px;">
+        <div class="ck-card" style="max-width:520px;margin:0 auto;">
             <p class="text-muted mb-3" style="font-size:13px;">Select your preferred language. The interface will update immediately.</p>
             <div class="row g-3">
                 <div class="col-6">
@@ -233,6 +260,33 @@ $currentLang = $_SESSION['language'] ?? 'en';
     </div>
 </div>
 
+<!-- ============ MODAL: EDIT USER ============ -->
+<div class="ck-modal-overlay" id="editUserOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:400px;">
+        <div class="ck-modal-header">
+            <h5>Edit User</h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="editUserOverlay"></i>
+        </div>
+        <form id="editUserForm">
+            <input type="hidden" id="editUserId">
+
+            <label class="ck-label"><?php echo lang('name'); ?></label>
+            <input type="text" class="ck-input" id="editUserFullName" required>
+
+            <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
+            <input type="text" class="ck-input" id="editUserUsername" required>
+
+            <label class="ck-label mt-2"><?php echo lang('password'); ?> <span class="text-muted">(ফাঁকা রাখলে পরিবর্তন হবে না)</span></label>
+            <input type="text" class="ck-input" id="editUserPassword" placeholder="Leave blank to keep current password">
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="editUserOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ============ MODAL: RECEIVE PAYMENT (CUSTOMER) ============ -->
 <div class="ck-modal-overlay" id="customerPaymentOverlay" style="display:none;">
     <div class="ck-modal-box" style="max-width:400px;">
@@ -281,7 +335,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
-    .settings-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+    .settings-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; justify-content: center; flex-wrap: wrap; }
     .settings-tab {
         border: 1.5px solid var(--border-color); background: #fff; color: var(--text-muted);
         padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
@@ -307,11 +361,25 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
     .cash-type-badge-add { background: #f0fdf4; color: #16a34a; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
     .cash-type-badge-withdraw { background: #fef2f2; color: #dc2626; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
+
+    .user-you-badge { background: var(--light-blue); color: var(--primary-blue); font-size: 9px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
+
+    /* ============ MOBILE: Settings Tabs লাইন-বাই-লাইন ও ছোট ============ */
+    @media (max-width: 767px) {
+        .settings-tabs {
+            flex-direction: column; align-items: stretch; overflow-x: visible; gap: 6px;
+        }
+        .settings-tab {
+            width: 100%; justify-content: flex-start; padding: 10px 14px; font-size: 12.5px;
+        }
+    }
 </style>
 
 <!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
+    const currentSessionUserId = <?php echo (int) $_SESSION['user_id']; ?>;
+
     function money(v) {
         return '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -337,6 +405,45 @@ $currentLang = $_SESSION['language'] ?? 'en';
             if (this.dataset.tab === 'customers') loadCustomers();
             if (this.dataset.tab === 'suppliers') loadSuppliers();
         });
+    });
+
+    /* ============ MY ACCOUNT ============ */
+    document.getElementById('myAccountForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            id: currentSessionUserId,
+            full_name: document.getElementById('myFullName').value.trim(),
+            username: document.getElementById('myUsername').value.trim(),
+            password: document.getElementById('myPassword').value.trim()
+        };
+
+        const btn = document.getElementById('myAccountSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+        try {
+            const res = await fetch('api/users/update.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('myAccountAvatar').textContent = payload.full_name.charAt(0).toUpperCase();
+                document.getElementById('myPassword').value = '';
+                const topAvatar = document.querySelector('.profile-avatar');
+                const topName = document.querySelector('.profile-name');
+                if (topAvatar) topAvatar.textContent = payload.full_name.charAt(0).toUpperCase();
+                if (topName) topName.textContent = payload.full_name;
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) {
+            ckToast('error', 'Failed to update account');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>';
+        }
     });
 
     /* ============ BUSINESS INFO SAVE ============ */
@@ -461,10 +568,15 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
             tbody.innerHTML = result.data.map(u => `
                 <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${u.full_name}</td>
+                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${u.full_name}${u.id === result.current_user_id ? '<span class="user-you-badge">You</span>' : ''}</td>
                     <td data-label="<?php echo lang('username'); ?>">${u.username}</td>
                     <td data-label="Joined">${formatDate(u.created_at)}</td>
-                    <td data-label="<?php echo lang('action'); ?>"><button class="icon-btn ck-btn-danger-soft" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button class="icon-btn ck-btn-outline" onclick='openEditUser(${JSON.stringify(u)})'><i class="fa-solid fa-pen"></i></button>
+                            ${u.id !== result.current_user_id ? `<button class="icon-btn ck-btn-danger-soft" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                    </td>
                 </tr>
             `).join('');
         } catch (err) {
@@ -500,6 +612,49 @@ $currentLang = $_SESSION['language'] ?? 'en';
             }
         } catch (err) {
             ckToast('error', 'Failed to add user');
+        }
+    });
+
+    window.openEditUser = function (u) {
+        document.getElementById('editUserId').value = u.id;
+        document.getElementById('editUserFullName').value = u.full_name;
+        document.getElementById('editUserUsername').value = u.username;
+        document.getElementById('editUserPassword').value = '';
+        document.getElementById('editUserOverlay').style.display = 'flex';
+    };
+
+    document.getElementById('editUserForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('editUserId').value,
+            full_name: document.getElementById('editUserFullName').value.trim(),
+            username: document.getElementById('editUserUsername').value.trim(),
+            password: document.getElementById('editUserPassword').value.trim()
+        };
+
+        try {
+            const res = await fetch('api/users/update.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('editUserOverlay').style.display = 'none';
+                loadUsers();
+
+                // যদি নিজেকেই Edit করে থাকো, তাহলে Top Bar-ও আপডেট হবে
+                if (parseInt(payload.id) === currentSessionUserId) {
+                    const topAvatar = document.querySelector('.profile-avatar');
+                    const topName = document.querySelector('.profile-name');
+                    if (topAvatar) topAvatar.textContent = payload.full_name.charAt(0).toUpperCase();
+                    if (topName) topName.textContent = payload.full_name;
+                }
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) {
+            ckToast('error', 'Failed to update user');
         }
     });
 

@@ -7,9 +7,10 @@ try {
     $search = trim($_GET['search'] ?? '');
 
     $sql = "
-        SELECT pu.id, pu.quantity, pu.purchase_price, pu.total_amount, pu.payment_type,
-               pu.paid_amount, pu.due_amount, pu.created_at,
-               pr.name AS product_name,
+        SELECT pu.id, pu.product_id, pu.quantity, pu.purchase_price, pu.total_amount, pu.payment_type,
+               pu.paid_amount, pu.due_amount, pu.created_at, pu.supplier_id,
+               pr.name AS product_name, pr.description AS product_description,
+               pr.sale_price AS product_sale_price, pr.low_stock_alert,
                s.name AS supplier_name
         FROM purchases pu
         INNER JOIN products pr ON pr.id = pu.product_id

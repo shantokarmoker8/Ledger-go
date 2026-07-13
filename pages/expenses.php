@@ -3,10 +3,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
 ?>
 <div id="expensesPage">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+   <div class="page-head mb-3">
         <div>
-            <h4 class="mb-0" style="font-weight:600;"><?php echo lang('expenses'); ?></h4>
-            <p class="text-muted mb-0" style="font-size:13px;">Track your daily business expenses</p>
+            <h4><?php echo lang('expenses'); ?></h4>
+            <p>Track your daily business expenses</p>
         </div>
         <button class="ck-btn ck-btn-primary" id="btnNewExpense">
             <i class="fa-solid fa-plus"></i> <?php echo lang('expenses'); ?>

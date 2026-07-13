@@ -3,10 +3,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
 ?>
 <div id="salesPage">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="page-head mb-3">
         <div>
-            <h4 class="mb-0" style="font-weight:600;"><?php echo lang('sales'); ?></h4>
-            <p class="text-muted mb-0" style="font-size:13px;">Sell products from your available stock</p>
+            <h4><?php echo lang('sales'); ?></h4>
+            <p>Sell products from your available stock</p>
         </div>
         <button class="ck-btn ck-btn-outline" id="btnToggleHistory">
             <i class="fa-solid fa-clock-rotate-left"></i> <span id="toggleHistoryText">View History</span>
@@ -20,12 +20,29 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
+    <!-- ============ PRODUCT LIST (TABLE, sell mode) ============ -->
     <div id="productGridView">
-        <div class="row g-3" id="productGrid">
-            <div class="col-12 text-center py-5 text-muted">Loading products...</div>
+        <div class="ck-card p-0">
+            <div class="table-responsive">
+                <table class="ck-table">
+                    <thead>
+                        <tr>
+                            <th><?php echo lang('product_name'); ?></th>
+                            <th><?php echo lang('description'); ?></th>
+                            <th><?php echo lang('sale_price'); ?></th>
+                            <th><?php echo lang('stock'); ?></th>
+                            <th><?php echo lang('action'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <!-- ============ SALES HISTORY (TABLE) ============ -->
     <div id="salesHistoryView" style="display:none;">
         <div class="ck-card p-0">
             <div class="table-responsive">
@@ -37,7 +54,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
                             <th><?php echo lang('quantity'); ?></th>
                             <th><?php echo lang('sale_price'); ?></th>
                             <th><?php echo lang('total_amount'); ?></th>
-                            <th><?php echo lang('payment_type'); ?></th>
+                            <th>Status</th>
                             <th><?php echo lang('date'); ?></th>
                             <th><?php echo lang('action'); ?></th>
                         </tr>
@@ -61,6 +78,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         <form id="sellProductForm">
             <input type="hidden" id="sellProductId">
+            <input type="hidden" id="sellProductCostPrice">
 
             <p class="text-muted mb-3" style="font-size:12px;">
                 <?php echo lang('stock'); ?>: <span id="sellAvailableStock" style="font-weight:600;color:var(--text-dark);"></span>
@@ -77,25 +95,42 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 </div>
             </div>
 
-            <label class="ck-label mt-2"><?php echo lang('customer'); ?> <span class="text-muted">(optional for cash sale)</span></label>
-            <select class="ck-select" id="sellCustomerSelect">
-                <option value="">-- Walk-in Customer --</option>
-            </select>
+            <label class="ck-label mt-2"><?php echo lang('customer'); ?> <span class="text-muted">(optional)</span></label>
+            <div class="d-flex gap-2">
+                <select class="ck-select" id="sellCustomerSelect">
+                    <option value="">-- Walk-in Customer --</option>
+                </select>
+                <button type="button" class="ck-btn ck-btn-outline" id="btnQuickAddCustomer" style="padding:10px 14px;" title="Add New Customer">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
 
-            <div class="ck-total-box mt-3">
-                <span><?php echo lang('total_amount'); ?></span>
+            <div class="row g-2 mt-1">
+                <div class="col-6">
+                    <label class="ck-label">Gross Amount</label>
+                    <div class="ck-input" style="background:#f8fafc;color:var(--text-muted);" id="sellGrossDisplay">৳0.00</div>
+                </div>
+                <div class="col-6">
+                    <label class="ck-label">Discount</label>
+                    <input type="number" step="0.01" min="0" class="ck-input" id="sellDiscountInput" placeholder="0.00" value="0">
+                </div>
+            </div>
+            <p class="text-muted mb-0 mt-1" style="font-size:11px;">Max Discount (No Loss): <span id="sellMaxDiscountText" style="font-weight:600;color:var(--success);">৳0.00</span></p>
+            <p class="mb-0 mt-1" id="sellDiscountWarning" style="font-size:11px;color:var(--danger);display:none;">
+                <i class="fa-solid fa-triangle-exclamation"></i> এর বেশি Discount দিলে Loss হবে!
+            </p>
+
+            <div class="ck-total-box mt-2">
+                <span><?php echo lang('total_amount'); ?> (After Discount)</span>
                 <span id="sellTotalDisplay">৳0.00</span>
             </div>
 
-            <label class="ck-label mt-3"><?php echo lang('payment_type'); ?></label>
-            <div class="ck-toggle-tabs">
-                <button type="button" class="ck-toggle-btn active" data-payment="cash"><?php echo lang('cash'); ?></button>
-                <button type="button" class="ck-toggle-btn" data-payment="due"><?php echo lang('due'); ?></button>
-            </div>
+            <label class="ck-label mt-3">Pay Amount</label>
+            <input type="number" step="0.01" min="0" class="ck-input" id="sellPaidAmountInput" placeholder="0.00">
 
-            <div id="sellPaidAmountBlock" class="mt-2" style="display:none;">
-                <label class="ck-label"><?php echo lang('paid_amount'); ?> <span class="text-muted">(optional partial payment)</span></label>
-                <input type="number" step="0.01" min="0" class="ck-input" id="sellPaidAmountInput" value="0">
+            <div class="d-flex justify-content-between mt-2" style="font-size:12px;">
+                <span class="text-muted">Due Amount</span>
+                <span id="sellDueDisplay" style="font-weight:600;color:var(--danger);">৳0.00</span>
             </div>
 
             <div class="d-flex gap-2 mt-3">
@@ -106,40 +141,91 @@ require_once __DIR__ . '/../includes/auth_check.php';
     </div>
 </div>
 
-<style>
-    .product-card {
-        background: #fff; border: 1px solid var(--border-color); border-radius: 14px;
-        padding: 16px; transition: all 0.2s ease; height: 100%;
-    }
-    .product-card:hover { border-color: var(--primary-blue); box-shadow: 0 6px 18px rgba(37,99,235,0.08); }
-    .product-card .pc-icon {
-        width: 44px; height: 44px; background: var(--light-blue); color: var(--primary-blue);
-        border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px;
-    }
-    .product-card .pc-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-    .product-card .pc-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; min-height: 14px; }
-    .product-card .pc-price { font-size: 15px; font-weight: 700; color: var(--primary-blue); }
-    .product-card .pc-stock { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-    .product-card .pc-stock.low { color: var(--warning); font-weight: 600; }
-    .product-card .pc-sell-btn {
-        width: 100%; margin-top: 12px; background: var(--primary-blue); color: #fff; border: none;
-        border-radius: 8px; padding: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-    }
-    .product-card .pc-sell-btn:hover { background: var(--dark-blue); }
+<!-- ============ MODAL: QUICK ADD CUSTOMER ============ -->
+<div class="ck-modal-overlay" id="quickCustomerOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:380px;">
+        <div class="ck-modal-header">
+            <h5><?php echo lang('add_customer'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="quickCustomerOverlay"></i>
+        </div>
+        <form id="quickCustomerForm">
+            <label class="ck-label"><?php echo lang('name'); ?></label>
+            <input type="text" class="ck-input" id="qcName" required>
 
-    @media (max-width: 480px) {
-        .product-card { padding: 10px; }
-        .product-card .pc-icon { width: 34px; height: 34px; font-size: 14px; margin-bottom: 8px; }
-        .product-card .pc-name { font-size: 12px; }
-        .product-card .pc-price { font-size: 13px; }
-    }
-</style>
+            <label class="ck-label mt-2"><?php echo lang('mobile'); ?></label>
+            <input type="text" class="ck-input" id="qcMobile" required>
+
+            <label class="ck-label mt-2"><?php echo lang('address'); ?> <span class="text-muted">(optional)</span></label>
+            <input type="text" class="ck-input" id="qcAddress">
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="quickCustomerOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ MODAL: RETURN PRODUCT ============ -->
+<div class="ck-modal-overlay" id="returnOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:400px;">
+        <div class="ck-modal-header">
+            <h5>Return Product</h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="returnOverlay"></i>
+        </div>
+        <form id="returnForm">
+            <input type="hidden" id="returnSaleId">
+            <p style="font-size:13px;">Product: <strong id="returnProductName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Sold Quantity: <span id="returnSoldQty" style="font-weight:600;"></span></p>
+
+            <label class="ck-label mt-2">Return Quantity</label>
+            <input type="number" min="1" class="ck-input" id="returnQtyInput" required>
+
+            <div class="ck-total-box mt-3">
+                <span>Refund Amount</span>
+                <span id="returnAmountDisplay">৳0.00</span>
+            </div>
+            <p class="text-muted mb-0 mt-2" style="font-size:11px;">Stock ফেরত যাবে, এবং Refund Amount Cash Balance অথবা Customer Due থেকে সমন্বয় হবে।</p>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="returnOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-danger-soft flex-fill justify-content-center" id="returnSaveBtn">Confirm Return</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ MODAL: PAY SALE DUE ============ -->
+<div class="ck-modal-overlay" id="salesPayDueOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:380px;">
+        <div class="ck-modal-header">
+            <h5>Pay Due</h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="salesPayDueOverlay"></i>
+        </div>
+        <form id="salesPayDueForm">
+            <input type="hidden" id="salesPayDueSaleId">
+            <p style="font-size:13px;">Product: <strong id="salesPayDueProductName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Customer: <strong id="salesPayDueCustomerName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Due Amount: <span id="salesPayDueAmountText" style="font-weight:600;color:var(--danger);"></span></p>
+
+            <label class="ck-label mt-2"><?php echo lang('amount'); ?></label>
+            <input type="number" step="0.01" min="0.01" class="ck-input" id="salesPayDueAmountInput" required>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="salesPayDueOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center">Pay</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
 (function () {
     let productsCache = [];
     let customersCache = [];
     let historyMode = false;
+    let returnUnitPrice = 0;
+    let returnMaxQty = 0;
 
     function money(v) {
         return '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -150,13 +236,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
-    async function loadProductGrid(search = '') {
-        const grid = document.getElementById('productGrid');
+    /* ============ LOAD PRODUCT TABLE (sell mode) ============ */
+    async function loadProductTable(search = '') {
+        const tbody = document.getElementById('productTableBody');
         try {
             const res = await fetch('api/sales/form_data.php');
             const result = await res.json();
             if (result.status !== 'success') {
-                grid.innerHTML = `<div class="col-12 text-center py-5 text-danger">Failed to load products</div>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load products</td></tr>`;
                 return;
             }
 
@@ -169,51 +256,55 @@ require_once __DIR__ . '/../includes/auth_check.php';
             }
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-12 text-center py-5 text-muted"><?php echo lang('no_data'); ?></div>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
                 return;
             }
 
-            grid.innerHTML = filtered.map(p => `
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="product-card">
-                        <div class="pc-icon"><i class="fa-solid fa-box"></i></div>
-                        <div class="pc-name">${p.name}</div>
-                        <div class="pc-desc">${p.description || ''}</div>
-                        <div class="pc-price">${money(p.sale_price)}</div>
-                        <div class="pc-stock ${p.stock <= p.low_stock_alert ? 'low' : ''}">
-                            <?php echo lang('stock'); ?>: ${p.stock} ${p.stock <= p.low_stock_alert ? '<i class="fa-solid fa-triangle-exclamation"></i>' : ''}
-                        </div>
-                        <button class="pc-sell-btn" data-id="${p.id}"><?php echo lang('sell'); ?></button>
-                    </div>
-                </div>
+            tbody.innerHTML = filtered.map(p => `
+                <tr>
+                    <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${p.name}</td>
+                    <td data-label="<?php echo lang('description'); ?>">${p.description ? p.description : '<span class="text-muted">—</span>'}</td>
+                    <td data-label="<?php echo lang('sale_price'); ?>" style="font-weight:600;">${money(p.sale_price)}</td>
+                    <td data-label="<?php echo lang('stock'); ?>">${p.stock}</td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <button class="ck-btn ck-btn-primary" style="padding:6px 14px;font-size:11px;" onclick="openSellModal(${p.id})"><?php echo lang('sell'); ?></button>
+                    </td>
+                </tr>
             `).join('');
-
-            gsap.killTweensOf('.product-card');
-            gsap.fromTo('.product-card', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.04, ease: "power2.out", overwrite: true, clearProps: "opacity,transform" });
-
-            document.querySelectorAll('.pc-sell-btn').forEach(btn => {
-                btn.addEventListener('click', () => openSellModal(parseInt(btn.dataset.id)));
-            });
         } catch (err) {
-            grid.innerHTML = `<div class="col-12 text-center py-5 text-danger">Error loading products</div>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error loading products</td></tr>`;
         }
     }
 
-    function openSellModal(productId) {
+    /* ============ LOAD CUSTOMERS FOR DROPDOWN (Quick Add-এর পর Refresh করতে) ============ */
+    async function loadCustomersDropdown(selectedId = null) {
+        try {
+            const res = await fetch('api/customer/list.php');
+            const result = await res.json();
+            if (result.status === 'success') {
+                customersCache = result.data;
+                const select = document.getElementById('sellCustomerSelect');
+                select.innerHTML = '<option value="">-- Walk-in Customer --</option>' +
+                    customersCache.map(c => `<option value="${c.id}" ${selectedId == c.id ? 'selected' : ''}>${c.name} - ${c.mobile}</option>`).join('');
+            }
+        } catch (err) { /* silent */ }
+    }
+
+    window.openSellModal = function (productId) {
         const product = productsCache.find(p => p.id === productId);
         if (!product) return;
 
         document.getElementById('sellProductId').value = product.id;
+        document.getElementById('sellProductCostPrice').value = product.purchase_price;
         document.getElementById('sellProductName').textContent = product.name;
         document.getElementById('sellAvailableStock').textContent = product.stock;
         document.getElementById('sellQuantityInput').value = 1;
         document.getElementById('sellQuantityInput').max = product.stock;
         document.getElementById('sellPriceInput').value = product.sale_price;
-        document.getElementById('sellPaidAmountInput').value = 0;
-
-        document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('#sellProductForm .ck-toggle-btn[data-payment="cash"]').classList.add('active');
-        document.getElementById('sellPaidAmountBlock').style.display = 'none';
+        document.getElementById('sellDiscountInput').value = 0;
+        document.getElementById('sellPaidAmountInput').value = '';
+        document.getElementById('sellDueDisplay').textContent = '৳0.00';
+        document.getElementById('sellDiscountWarning').style.display = 'none';
 
         const customerSelect = document.getElementById('sellCustomerSelect');
         customerSelect.innerHTML = '<option value="">-- Walk-in Customer --</option>' +
@@ -221,46 +312,106 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         recalcSellTotal();
         document.getElementById('sellProductOverlay').style.display = 'flex';
-    }
+    };
 
+    /* ============ CALCULATION: Gross, Max Discount (Loss Protection), Total, Due ============ */
     function recalcSellTotal() {
         const price = parseFloat(document.getElementById('sellPriceInput').value) || 0;
         const qty = parseFloat(document.getElementById('sellQuantityInput').value) || 0;
-        document.getElementById('sellTotalDisplay').textContent = money(price * qty);
+        const costPrice = parseFloat(document.getElementById('sellProductCostPrice').value) || 0;
+
+        const gross = price * qty;
+        const totalCost = costPrice * qty;
+        const maxDiscount = Math.max(gross - totalCost, 0);
+
+        document.getElementById('sellGrossDisplay').textContent = money(gross);
+        document.getElementById('sellMaxDiscountText').textContent = money(maxDiscount);
+
+        let discount = parseFloat(document.getElementById('sellDiscountInput').value) || 0;
+        const warningEl = document.getElementById('sellDiscountWarning');
+
+        if (discount > maxDiscount) {
+            discount = maxDiscount;
+            document.getElementById('sellDiscountInput').value = maxDiscount.toFixed(2);
+            warningEl.style.display = 'block';
+            setTimeout(() => { warningEl.style.display = 'none'; }, 2500);
+        }
+
+        const total = gross - discount;
+        document.getElementById('sellTotalDisplay').textContent = money(total);
+        recalcSellDue();
     }
+
+    function recalcSellDue() {
+        const price = parseFloat(document.getElementById('sellPriceInput').value) || 0;
+        const qty = parseFloat(document.getElementById('sellQuantityInput').value) || 0;
+        const discount = parseFloat(document.getElementById('sellDiscountInput').value) || 0;
+        const total = (price * qty) - discount;
+        let paid = parseFloat(document.getElementById('sellPaidAmountInput').value) || 0;
+
+        if (paid > total) {
+            paid = total;
+            document.getElementById('sellPaidAmountInput').value = total.toFixed(2);
+        }
+        document.getElementById('sellDueDisplay').textContent = money(total - paid);
+    }
+
     document.getElementById('sellPriceInput').addEventListener('input', recalcSellTotal);
     document.getElementById('sellQuantityInput').addEventListener('input', recalcSellTotal);
-
-    document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('#sellProductForm .ck-toggle-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById('sellPaidAmountBlock').style.display = this.dataset.payment === 'due' ? 'block' : 'none';
-        });
-    });
+    document.getElementById('sellDiscountInput').addEventListener('input', recalcSellTotal);
+    document.getElementById('sellPaidAmountInput').addEventListener('input', recalcSellDue);
 
     document.querySelectorAll('#sellProductOverlay [data-close], #sellProductOverlay .ck-modal-close').forEach(el => {
         el.addEventListener('click', () => document.getElementById('sellProductOverlay').style.display = 'none');
     });
 
+    /* ============ QUICK ADD CUSTOMER ============ */
+    document.getElementById('btnQuickAddCustomer').addEventListener('click', () => {
+        document.getElementById('quickCustomerForm').reset();
+        document.getElementById('quickCustomerOverlay').style.display = 'flex';
+    });
+
+    document.querySelectorAll('#quickCustomerOverlay [data-close], #quickCustomerOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('quickCustomerOverlay').style.display = 'none');
+    });
+
+    document.getElementById('quickCustomerForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            name: document.getElementById('qcName').value.trim(),
+            mobile: document.getElementById('qcMobile').value.trim(),
+            address: document.getElementById('qcAddress').value.trim()
+        };
+        try {
+            const res = await fetch('api/customer/add.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('quickCustomerOverlay').style.display = 'none';
+                await loadCustomersDropdown(result.data.id);
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) {
+            ckToast('error', 'Failed to add customer');
+        }
+    });
+
+    /* ============ SUBMIT SALE ============ */
     document.getElementById('sellProductForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        const paymentType = document.querySelector('#sellProductForm .ck-toggle-btn.active').dataset.payment;
         const customerId = document.getElementById('sellCustomerSelect').value;
-
-        if (paymentType === 'due' && !customerId) {
-            ckToast('warning', 'Please select a customer for Due sale');
-            return;
-        }
 
         const payload = {
             product_id: document.getElementById('sellProductId').value,
             customer_id: customerId,
             quantity: document.getElementById('sellQuantityInput').value,
             sale_price: document.getElementById('sellPriceInput').value,
-            payment_type: paymentType,
-            paid_amount: paymentType === 'due' ? (document.getElementById('sellPaidAmountInput').value || 0) : 0
+            discount_amount: document.getElementById('sellDiscountInput').value || 0,
+            paid_amount: document.getElementById('sellPaidAmountInput').value || 0
         };
 
         const saveBtn = document.getElementById('sellSaveBtn');
@@ -277,7 +428,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 ckToast('success', result.message);
                 document.getElementById('sellProductOverlay').style.display = 'none';
                 updateCashBalance(result.cash_balance);
-                loadProductGrid(document.getElementById('salesSearch').value);
+                loadProductTable(document.getElementById('salesSearch').value);
                 if (historyMode) loadSalesHistory();
             } else {
                 ckToast('error', result.message);
@@ -290,6 +441,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
+    /* ============ SALES HISTORY ============ */
     async function loadSalesHistory(search = '') {
         const tbody = document.getElementById('salesTableBody');
         try {
@@ -301,45 +453,140 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 return;
             }
 
-            tbody.innerHTML = result.data.map(s => `
+            tbody.innerHTML = result.data.map(s => {
+                let statusHtml;
+                if (s.due_amount > 0 && s.paid_amount > 0) {
+                    statusHtml = `<span class="badge-due">Partial</span><div style="font-size:10px;color:var(--danger);margin-top:2px;">Due: ${money(s.due_amount)}</div>`;
+                } else if (s.due_amount > 0) {
+                    statusHtml = `<span class="badge-due"><?php echo lang('due'); ?></span><div style="font-size:10px;color:var(--danger);margin-top:2px;">Due: ${money(s.due_amount)}</div>`;
+                } else {
+                    statusHtml = `<span class="badge-cash">Paid</span>`;
+                }
+
+                return `
                 <tr>
                     <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${s.product_name}</td>
                     <td data-label="<?php echo lang('customer'); ?>">${s.customer_name ? s.customer_name : '<span class="text-muted">Walk-in</span>'}</td>
                     <td data-label="<?php echo lang('quantity'); ?>">${s.quantity}</td>
                     <td data-label="<?php echo lang('sale_price'); ?>">${money(s.sale_price)}</td>
-                    <td data-label="<?php echo lang('total_amount'); ?>" style="font-weight:600;">${money(s.total_amount)}</td>
-                    <td data-label="<?php echo lang('payment_type'); ?>"><span class="${s.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${s.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span></td>
+                    <td data-label="<?php echo lang('total_amount'); ?>" style="font-weight:600;">${money(s.total_amount)}${s.discount_amount > 0 ? `<div style="font-size:10px;color:var(--warning);margin-top:2px;">Discount: ${money(s.discount_amount)}</div>` : ''}</td>
+                    <td data-label="Status">${statusHtml}</td>
                     <td data-label="<?php echo lang('date'); ?>">${formatDate(s.created_at)}</td>
-                    <td data-label="<?php echo lang('action'); ?>"><button class="icon-btn ck-btn-danger-soft" onclick="deleteSale(${s.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <div class="d-flex gap-2 justify-content-end">
+                            ${s.due_amount > 0 ? `<button class="ck-btn ck-btn-success-soft" style="padding:6px 10px;font-size:11px;" onclick='openSalesPayDue(${JSON.stringify(s)})'><i class="fa-solid fa-hand-holding-dollar"></i> Pay</button>` : ''}
+                            <button class="ck-btn ck-btn-outline" style="padding:6px 10px;font-size:11px;" onclick='openReturnModal(${JSON.stringify(s)})'><i class="fa-solid fa-rotate-left"></i> Return</button>
+                        </div>
+                    </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         } catch (err) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Error loading data</td></tr>`;
         }
     }
 
-    window.deleteSale = async function (id) {
-        const confirmResult = await ckConfirm('This will restore stock and reverse cash balance for this sale.');
-        if (!confirmResult.isConfirmed) return;
+    /* ============ PAY SALE DUE ============ */
+    window.openSalesPayDue = function (s) {
+        document.getElementById('salesPayDueSaleId').value = s.id;
+        document.getElementById('salesPayDueProductName').textContent = s.product_name;
+        document.getElementById('salesPayDueCustomerName').textContent = s.customer_name ? s.customer_name : 'Walk-in';
+        document.getElementById('salesPayDueAmountText').textContent = money(s.due_amount);
+        document.getElementById('salesPayDueAmountInput').value = '';
+        document.getElementById('salesPayDueAmountInput').max = s.due_amount;
+        document.getElementById('salesPayDueOverlay').style.display = 'flex';
+    };
+
+    document.getElementById('salesPayDueForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('salesPayDueSaleId').value,
+            amount: document.getElementById('salesPayDueAmountInput').value
+        };
+        try {
+            const res = await fetch('api/sales/pay_due.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('salesPayDueOverlay').style.display = 'none';
+                updateCashBalance(result.cash_balance);
+                loadSalesHistory(document.getElementById('salesSearch').value);
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) {
+            ckToast('error', 'Failed to pay due');
+        }
+    });
+
+    document.querySelectorAll('#salesPayDueOverlay [data-close], #salesPayDueOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('salesPayDueOverlay').style.display = 'none');
+    });
+
+    /* ============ RETURN MODAL ============ */
+    window.openReturnModal = function (s) {
+        document.getElementById('returnSaleId').value = s.id;
+        document.getElementById('returnProductName').textContent = s.product_name;
+        document.getElementById('returnSoldQty').textContent = s.quantity;
+        document.getElementById('returnQtyInput').value = s.quantity;
+        document.getElementById('returnQtyInput').max = s.quantity;
+
+        returnUnitPrice = parseFloat(s.sale_price);
+        returnMaxQty = s.quantity;
+
+        recalcReturnAmount();
+        document.getElementById('returnOverlay').style.display = 'flex';
+    };
+
+    function recalcReturnAmount() {
+        let qty = parseInt(document.getElementById('returnQtyInput').value) || 0;
+        if (qty > returnMaxQty) {
+            qty = returnMaxQty;
+            document.getElementById('returnQtyInput').value = qty;
+        }
+        document.getElementById('returnAmountDisplay').textContent = money(qty * returnUnitPrice);
+    }
+    document.getElementById('returnQtyInput').addEventListener('input', recalcReturnAmount);
+
+    document.getElementById('returnForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('returnSaleId').value,
+            return_qty: document.getElementById('returnQtyInput').value
+        };
+
+        const btn = document.getElementById('returnSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
         try {
-            const res = await fetch('api/sales/delete.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
+            const res = await fetch('api/sales/return.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
 
             if (result.status === 'success') {
                 ckToast('success', result.message);
+                document.getElementById('returnOverlay').style.display = 'none';
                 updateCashBalance(result.cash_balance);
                 loadSalesHistory();
-                loadProductGrid();
+                loadProductTable();
             } else {
                 ckToast('error', result.message);
             }
         } catch (err) {
-            ckToast('error', 'Failed to delete sale');
+            ckToast('error', 'Failed to process return');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Confirm Return';
         }
-    };
+    });
+
+    document.querySelectorAll('#returnOverlay [data-close], #returnOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('returnOverlay').style.display = 'none');
+    });
 
     document.getElementById('btnToggleHistory').addEventListener('click', function () {
         historyMode = !historyMode;
@@ -356,10 +603,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
         const val = this.value;
         searchTimer = setTimeout(() => {
             if (historyMode) loadSalesHistory(val);
-            else loadProductGrid(val);
+            else loadProductTable(val);
         }, 350);
     });
 
-    loadProductGrid();
+    loadProductTable();
 })();
 </script>

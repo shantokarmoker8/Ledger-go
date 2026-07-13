@@ -17,7 +17,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="shortcut icon" href="./assets/logo.png" type="image/x-icon">
 
 <style>
     :root {
@@ -38,7 +37,15 @@ $currentLang = $_SESSION['language'] ?? 'en';
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    body { background: var(--body-bg); color: var(--text-dark); overflow-x: hidden; }
+
+    /* ============ FIX: overflow-x:hidden পুরো <body>-কে একটা লুকানো
+       Scroll Container বানিয়ে ফেলে, যার কারণে position:sticky দুইটা
+       আলাদা Scroll Context-এর মধ্যে হিসাব গণ্ডগোল করে নড়াচড়া করত।
+       overflow-x:clip একইভাবে Horizontal Overflow আটকায় কিন্তু কোনো
+       নতুন Scroll Container তৈরি করে না — তাই Sticky Header এখন
+       সরাসরি Window-এর সাপেক্ষে হিসাব হয়ে সম্পূর্ণ স্থির থাকে। ============ */
+    body { background: var(--body-bg); color: var(--text-dark); overflow-x: clip; }
+
     a { text-decoration: none; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -51,13 +58,12 @@ $currentLang = $_SESSION['language'] ?? 'en';
         padding: 0 26px; z-index: 1000; transition: left 0.2s ease;
     }
 
-    /* Topbar Brand: hidden by default on desktop, sidebar already shows the brand there */
     .topbar-left { display: none; align-items: center; gap: 12px; }
     .topbar-left .brand-logo {
-        width: 38px; height: 38px; background: var(--primary-blue); border-radius: 10px;
-        display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
+        width: 36px; height: 36px; background: var(--primary-blue); border-radius: 10px;
+        display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px;
     }
-    .topbar-left .brand-text { font-weight: 600; font-size: 16px; color: var(--text-dark); }
+    .topbar-left .brand-text { display: none; }
 
     .topbar-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 
@@ -146,7 +152,12 @@ $currentLang = $_SESSION['language'] ?? 'en';
     .skeleton-card { height: 100px; margin-bottom: 16px; }
     .skeleton-row { height: 46px; margin-bottom: 10px; }
 
-    /* ============ GLOBAL CARD / BUTTON (used everywhere) ============ */
+    /* ============ GLOBAL: PAGE HEADER ============ */
+    .page-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .page-head h4 { font-weight: 600; margin: 0; }
+    .page-head p { color: var(--text-muted); font-size: 13px; margin: 0; }
+
+    /* ============ GLOBAL CARD / BUTTON ============ */
     .ck-card { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
     .ck-btn {
         border: none; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 600;
@@ -158,12 +169,14 @@ $currentLang = $_SESSION['language'] ?? 'en';
     .ck-btn-outline:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
     .ck-btn-danger-soft { background: #fef2f2; color: var(--danger); }
     .ck-btn-danger-soft:hover { background: #fee2e2; }
+    .ck-btn-success-soft { background: #f0fdf4; color: var(--success); }
+    .ck-btn-success-soft:hover { background: #dcfce7; }
     .icon-btn {
         width: 30px; height: 30px; border-radius: 8px; border: none; display: inline-flex;
         align-items: center; justify-content: center; cursor: pointer; font-size: 12px; transition: all 0.2s ease;
     }
 
-    /* ============ GLOBAL: SEARCH INPUT (used on all list pages) ============ */
+    /* ============ GLOBAL: SEARCH INPUT ============ */
     .input-group-search { position: relative; }
     .input-group-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
     .input-group-search input {
@@ -172,7 +185,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
     }
     .input-group-search input:focus { border-color: var(--primary-blue); }
 
-    /* ============ GLOBAL: TABLE (with mobile card-stack pattern) ============ */
+    /* ============ GLOBAL: TABLE ============ */
     .ck-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .ck-table thead th {
         text-align: left; padding: 14px 18px; background: #f8fafc; color: var(--text-muted);
@@ -220,7 +233,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
     }
     .ck-filter-btn.active { background: var(--primary-blue); border-color: var(--primary-blue); color: #fff; }
 
-    /* ============ GLOBAL: LIST ROWS (recent purchase/sales, etc) ============ */
+    /* ============ GLOBAL: LIST ROWS ============ */
     .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
     .list-row:last-child { border-bottom: none; }
     .list-row .lr-title { font-weight: 500; color: var(--text-dark); }
@@ -230,9 +243,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
     .badge-due { background: #fff7ed; color: #d97706; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
 
     /* ============ RESPONSIVE BREAKPOINTS ============ */
-    @media (min-width: 992px) {
-        .profile-name { display: block; }
-    }
+    @media (min-width: 992px) { .profile-name { display: block; } }
 
     @media (max-width: 991px) {
         :root { --sidebar-width: 0px; }
@@ -244,9 +255,9 @@ $currentLang = $_SESSION['language'] ?? 'en';
     }
 
     @media (max-width: 767px) {
-        .ck-btn { padding: 8px 12px; font-size: 12px; }
+        .ck-btn { padding: 9px 16px; font-size: 12px; }
+        .page-head { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
 
-        /* Table -> Stacked Card pattern on mobile */
         .ck-table thead { display: none; }
         .ck-table, .ck-table tbody, .ck-table tr, .ck-table td { display: block; width: 100%; }
         .ck-table tbody tr {
@@ -327,7 +338,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
     <div class="bn-item" data-page="purchase"><i class="fa-solid fa-cart-shopping"></i><span><?php echo lang('purchase'); ?></span></div>
     <div class="bn-item" data-page="sales"><i class="fa-solid fa-tags"></i><span><?php echo lang('sales'); ?></span></div>
     <div class="bn-item" data-page="expenses"><i class="fa-solid fa-receipt"></i><span><?php echo lang('expenses'); ?></span></div>
-    <div class="bn-item" data-page="settings"><i class="fa-solid fa-gear"></i><span><?php echo lang('settings'); ?></span></div>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -383,7 +393,10 @@ async function loadPage(page, pushState = true) {
         const content = document.getElementById('pageContent');
         content.innerHTML = html;
 
-        gsap.from(content.children, { y: 16, opacity: 0, duration: 0.45, stagger: 0.05, ease: "power2.out", clearProps: "opacity,transform" });
+        gsap.fromTo(content,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.35, ease: "power2.out", clearProps: "opacity" }
+        );
 
         executeInlineScripts(content);
 

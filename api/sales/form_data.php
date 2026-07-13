@@ -4,8 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 header('Content-Type: application/json');
 
 try {
-    // Only products with stock > 0
-    $products = $pdo->query("SELECT id, name, description, sale_price, stock, low_stock_alert FROM products WHERE stock > 0 ORDER BY name ASC")->fetchAll();
+    $products = $pdo->query("SELECT id, name, description, purchase_price, sale_price, stock, low_stock_alert FROM products WHERE stock > 0 ORDER BY name ASC")->fetchAll();
     $customers = $pdo->query("SELECT id, name, mobile FROM customers ORDER BY name ASC")->fetchAll();
     $settings = $pdo->query("SELECT cash_balance FROM settings LIMIT 1")->fetch();
 

@@ -3,38 +3,52 @@ require_once __DIR__ . '/../includes/auth_check.php';
 ?>
 <div id="dashboardPage">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div>
-            <h4 class="mb-0" style="font-weight:600;"><?php echo lang('dashboard'); ?></h4>
-            <p class="text-muted mb-0" style="font-size:13px;">Overview of your business performance</p>
+    <!-- ============ FIXED TOP SECTION ============ -->
+    <div class="dashboard-fixed-top" id="dashboardStickyTop">
+
+        <div class="dash-header-row">
+            <div class="dash-header-text">
+                <h4><?php echo lang('dashboard'); ?></h4>
+                <p>Overview of your business performance</p>
+            </div>
+            <select class="period-select" id="periodSelect">
+                <option value="today" selected>Today</option>
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 1 Month</option>
+                <option value="365">Last 1 Year</option>
+            </select>
+        </div>
+
+        <div class="row g-2 mb-3" id="summaryCardsRow"></div>
+
+        <div class="d-flex justify-content-center gap-3 mb-1 flex-wrap">
+            <button class="ck-btn ck-btn-primary" id="btnAddCustomer">
+                <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
+            </button>
+            <button class="ck-btn ck-btn-outline" id="btnAddSupplier">
+                <i class="fa-solid fa-truck"></i> <?php echo lang('add_supplier'); ?>
+            </button>
         </div>
     </div>
 
-    <div class="row g-2 mb-3" id="summaryCardsRow"></div>
+    <!-- ============ SPACER: Fixed Header-এর সমান জায়গা ফাঁকা রাখে (JS দিয়ে Height সেট হয়) ============ -->
+    <div id="dashboardTopSpacer"></div>
 
-    <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap">
-        <button class="ck-btn ck-btn-primary" id="btnAddCustomer">
-            <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
-        </button>
-        <button class="ck-btn ck-btn-outline" id="btnAddSupplier">
-            <i class="fa-solid fa-truck"></i> <?php echo lang('add_supplier'); ?>
-        </button>
-    </div>
-
-    <div class="recent-grid">
+    <!-- ============ SCROLLABLE SECTION: Recent Purchase/Sales ============ -->
+    <div class="recent-grid" id="recentGrid">
         <div class="ck-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_purchase'); ?></h6>
-                <i class="fa-solid fa-cart-shopping text-muted"></i>
+                <i class="fa-solid fa-cart-shopping recent-nav-icon" id="goToPurchase" title="View Purchase List"></i>
             </div>
-            <div id="recentPurchaseList"></div>
+            <div class="recent-scroll-body" id="recentPurchaseList"></div>
         </div>
         <div class="ck-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_sales'); ?></h6>
-                <i class="fa-solid fa-tags text-muted"></i>
+                <i class="fa-solid fa-tags recent-nav-icon" id="goToSales" title="View Sales List"></i>
             </div>
-            <div id="recentSalesList"></div>
+            <div class="recent-scroll-body" id="recentSalesList"></div>
         </div>
     </div>
 </div>
@@ -60,6 +74,9 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="addCustomerOverlay"><?php echo lang('cancel'); ?></button>
                 <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
             </div>
+            <button type="button" class="ck-btn ck-btn-outline w-100 justify-content-center mt-2" id="btnGoCustomerList">
+                <i class="fa-solid fa-list"></i> View Customer List
+            </button>
         </form>
     </div>
 </div>
@@ -85,6 +102,9 @@ require_once __DIR__ . '/../includes/auth_check.php';
                 <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="addSupplierOverlay"><?php echo lang('cancel'); ?></button>
                 <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
             </div>
+            <button type="button" class="ck-btn ck-btn-outline w-100 justify-content-center mt-2" id="btnGoSupplierList">
+                <i class="fa-solid fa-list"></i> View Supplier List
+            </button>
         </form>
     </div>
 </div>
@@ -108,11 +128,53 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
 
         <div id="chartSummaryBox" class="mt-3 text-center text-muted" style="font-size:13px;"></div>
+
+        <button type="button" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="chartViewListBtn">
+            <i class="fa-solid fa-list"></i> <span id="chartViewListText">View List</span>
+        </button>
     </div>
 </div>
 
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
+    /* ============ Fixed Top Section (sticky-এর বদলে fixed — Mobile-এ কোনো Wobble হয় না) ============ */
+    .dashboard-fixed-top {
+        position: fixed;
+        top: var(--topbar-height);
+        left: var(--sidebar-width);
+        right: 0;
+        z-index: 40;
+        background: var(--body-bg);
+        padding: 12px 26px 10px;
+        transition: left 0.2s ease;
+    }
+
+    .dash-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .dash-header-text { min-width: 0; }
+    .dash-header-text h4 {
+        font-weight: 600; margin: 0 0 2px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dash-header-text p {
+        color: var(--text-muted); font-size: 13px; margin: 0;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .period-select {
+        border: 1.5px solid var(--border-color); border-radius: 10px; padding: 9px 14px;
+        font-size: 12.5px; font-weight: 500; color: var(--text-dark); background: #fff;
+        cursor: pointer; outline: none; flex-shrink: 0;
+    }
+    .period-select:focus { border-color: var(--primary-blue); }
+
+    /* ============ Summary Cards ============ */
     .summary-card {
         background: #fff; border: 1px solid var(--border-color); border-radius: 14px;
         padding: 16px; cursor: pointer; transition: all 0.2s ease; height: 100%;
@@ -127,20 +189,48 @@ require_once __DIR__ . '/../includes/auth_check.php';
     .summary-card .sc-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .summary-card .sc-value { font-size: 16px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    /* ============ Recent Grid ============ */
+    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+    .recent-scroll-body { max-height: 320px; overflow-y: auto; padding-right: 4px; }
+    .recent-nav-icon {
+        cursor: pointer; color: var(--text-muted); font-size: 15px; transition: color 0.2s ease;
+        width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+        border-radius: 8px;
+    }
+    .recent-nav-icon:hover { color: var(--primary-blue); background: var(--light-blue); }
+
+    @media (max-width: 991px) {
+        .dashboard-fixed-top { left: 0; padding: 12px 16px 10px; }
+    }
 
     @media (max-width: 767px) {
-        .summary-card { flex-direction: column; text-align: center; padding: 10px 6px; gap: 6px; }
-        .summary-card .sc-icon { width: 30px; height: 30px; font-size: 12px; }
+        .dash-header-text h4 { font-size: 16px; }
+        .dash-header-text p { font-size: 10.5px; }
+        .period-select { padding: 7px 8px; font-size: 11px; }
+
+        .summary-card { flex-direction: column; text-align: center; padding: 8px 4px; gap: 4px; }
+        .summary-card .sc-icon { width: 26px; height: 26px; font-size: 11px; }
         .summary-card .sc-content { align-items: center; }
-        .summary-card .sc-label { font-size: 9px; white-space: normal; }
-        .summary-card .sc-value { font-size: 12px; }
+        .summary-card .sc-label { font-size: 8.5px; white-space: normal; }
+        .summary-card .sc-value { font-size: 11px; }
 
         .recent-grid {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px;
             padding-bottom: 6px; -webkit-overflow-scrolling: touch;
         }
         .recent-grid > .ck-card { flex: 0 0 100%; scroll-snap-align: start; }
+        .recent-scroll-body { max-height: 260px; }
+    }
+
+    @media (max-width: 380px) {
+        .dash-header-text h4 { font-size: 14px; }
+        .dash-header-text p { display: none; }
+        .period-select { padding: 6px 6px; font-size: 10px; }
+    }
+
+    @media (max-width: 480px) {
+        #chartFilterButtons { gap: 5px; }
+        #chartFilterButtons .ck-filter-btn { padding: 5px 8px; font-size: 10px; }
     }
 </style>
 
@@ -156,7 +246,17 @@ require_once __DIR__ . '/../includes/auth_check.php';
         { key: 'total_expenses', label: '<?php echo lang('total_expenses'); ?>', icon: 'fa-receipt',       color: '#0891b2', bg: '#ecfeff', type: 'expenses' }
     ];
 
+    const viewListMap = {
+        purchase:     { page: 'purchase' },
+        sales:        { page: 'sales' },
+        profit:       { page: 'sales' },
+        expenses:     { page: 'expenses' },
+        customer_due: { page: 'settings', tab: 'customers' },
+        supplier_due: { page: 'settings', tab: 'suppliers' }
+    };
+
     let dashboardChart = null;
+    let currentPeriod = 'today';
 
     function money(v) {
         return '৳' + parseFloat(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -171,9 +271,29 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return Math.floor(diff / 86400) + 'd ago';
     }
 
-    async function loadDashboard() {
+    /* ============ FIXED HEADER-এর সমান Spacer Height সেট করা (Wobble Fix) ============ */
+    function syncTopSpacer() {
+        const topEl = document.getElementById('dashboardStickyTop');
+        const spacer = document.getElementById('dashboardTopSpacer');
+        if (topEl && spacer) {
+            spacer.style.height = topEl.offsetHeight + 'px';
+        }
+    }
+
+    function goToSettingsTab(tab) {
+        loadPage('settings').then(() => {
+            setTimeout(() => {
+                const tabBtn = document.querySelector('.settings-tab[data-tab="' + tab + '"]');
+                if (tabBtn) tabBtn.click();
+            }, 300);
+        });
+    }
+
+    async function loadDashboard(period) {
+        if (period) currentPeriod = period;
+
         try {
-            const res = await fetch('api/dashboard/summary.php');
+            const res = await fetch('api/dashboard/summary.php?period=' + currentPeriod);
             const result = await res.json();
 
             if (result.status !== 'success') {
@@ -197,12 +317,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
                     </div>
                 </div>
             `).join('');
-
-            gsap.killTweensOf('.summary-card');
-            gsap.fromTo('.summary-card',
-                { y: 14, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: "power2.out", overwrite: true, clearProps: "opacity,transform" }
-            );
 
             document.querySelectorAll('.summary-card').forEach(card => {
                 card.addEventListener('click', () => openChartModal(card.dataset.type, card.dataset.label));
@@ -245,10 +359,20 @@ require_once __DIR__ . '/../includes/auth_check.php';
                     </div>
                 `).join('');
             }
+
+            // Card রেন্ডার হওয়ার পর Header-এর Height পরিবর্তন হতে পারে, তাই আবার Spacer Sync করা
+            requestAnimationFrame(syncTopSpacer);
         } catch (err) {
             ckToast('error', 'Something went wrong while loading dashboard');
         }
     }
+
+    document.getElementById('periodSelect').addEventListener('change', function () {
+        loadDashboard(this.value);
+    });
+
+    document.getElementById('goToPurchase').addEventListener('click', () => loadPage('purchase'));
+    document.getElementById('goToSales').addEventListener('click', () => loadPage('sales'));
 
     document.getElementById('btnAddCustomer').addEventListener('click', () => {
         document.getElementById('addCustomerOverlay').style.display = 'flex';
@@ -261,6 +385,15 @@ require_once __DIR__ . '/../includes/auth_check.php';
             const target = this.dataset.close;
             if (target) document.getElementById(target).style.display = 'none';
         });
+    });
+
+    document.getElementById('btnGoCustomerList').addEventListener('click', () => {
+        document.getElementById('addCustomerOverlay').style.display = 'none';
+        goToSettingsTab('customers');
+    });
+    document.getElementById('btnGoSupplierList').addEventListener('click', () => {
+        document.getElementById('addSupplierOverlay').style.display = 'none';
+        goToSettingsTab('suppliers');
     });
 
     document.getElementById('addCustomerForm').addEventListener('submit', async function (e) {
@@ -319,8 +452,24 @@ require_once __DIR__ . '/../includes/auth_check.php';
         document.getElementById('chartOverlay').style.display = 'flex';
         document.querySelectorAll('.ck-filter-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('.ck-filter-btn[data-days="7"]').classList.add('active');
+
+        const target = viewListMap[type];
+        document.getElementById('chartViewListText').textContent = target.tab
+            ? ('View ' + target.tab.charAt(0).toUpperCase() + target.tab.slice(1) + ' List')
+            : 'View List';
+
         await renderChart(type, 7);
     }
+
+    document.getElementById('chartViewListBtn').addEventListener('click', function () {
+        document.getElementById('chartOverlay').style.display = 'none';
+        const target = viewListMap[currentChartType];
+        if (target.tab) {
+            goToSettingsTab(target.tab);
+        } else {
+            loadPage(target.page);
+        }
+    });
 
     document.querySelectorAll('.ck-filter-btn').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -364,6 +513,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     }
 
-    loadDashboard();
+    /* ============ Window Resize/Orientation Change হলেও Spacer ঠিক থাকবে ============ */
+    window.addEventListener('resize', syncTopSpacer);
+
+    loadDashboard('today');
+    setTimeout(syncTopSpacer, 100);
 })();
 </script>
