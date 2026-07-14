@@ -3,35 +3,39 @@ require_once __DIR__ . '/../includes/auth_check.php';
 ?>
 <div id="expensesPage">
 
-   <div class="page-head mb-3">
-        <div>
-            <h4><?php echo lang('expenses'); ?></h4>
-            <p>Track your daily business expenses</p>
+    <!-- ============ HEADER BLOCK: Title + Total Card + Search (Fixed Size) ============ -->
+    <div class="expenses-header-block">
+        <div class="page-head mb-3">
+            <div>
+                <h4><?php echo lang('expenses'); ?></h4>
+                <p>Track your daily business expenses</p>
+            </div>
+            <button class="ck-btn ck-btn-primary" id="btnNewExpense">
+                <i class="fa-solid fa-plus"></i> <?php echo lang('expenses'); ?>
+            </button>
         </div>
-        <button class="ck-btn ck-btn-primary" id="btnNewExpense">
-            <i class="fa-solid fa-plus"></i> <?php echo lang('expenses'); ?>
-        </button>
+
+        <div class="ck-card mb-3" style="display:flex;align-items:center;gap:16px;">
+            <div style="width:46px;height:46px;background:#ecfeff;color:#0891b2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:12px;"><?php echo lang('total_expenses'); ?></div>
+                <div id="expenseTotalDisplay" style="font-size:20px;font-weight:700;">৳0.00</div>
+            </div>
+        </div>
+
+        <div class="ck-card mb-3">
+            <div class="input-group-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="expenseSearch" placeholder="<?php echo lang('search'); ?> expenses...">
+            </div>
+        </div>
     </div>
 
-    <div class="ck-card mb-3" style="display:flex;align-items:center;gap:16px;">
-        <div style="width:46px;height:46px;background:#ecfeff;color:#0891b2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
-            <i class="fa-solid fa-receipt"></i>
-        </div>
-        <div>
-            <div class="text-muted" style="font-size:12px;"><?php echo lang('total_expenses'); ?></div>
-            <div id="expenseTotalDisplay" style="font-size:20px;font-weight:700;">৳0.00</div>
-        </div>
-    </div>
-
-    <div class="ck-card mb-3">
-        <div class="input-group-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="expenseSearch" placeholder="<?php echo lang('search'); ?> expenses...">
-        </div>
-    </div>
-
-    <div class="ck-card p-0">
-        <div class="table-responsive">
+    <!-- ============ শুধু এই Box-টুকু Scroll হবে ============ -->
+    <div class="ck-card p-0 expenses-table-card">
+        <div class="table-responsive table-scroll-box" id="expenseTableScroll">
             <table class="ck-table">
                 <thead>
                     <tr>
@@ -71,6 +75,52 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </form>
     </div>
 </div>
+
+<!-- ============ PAGE-SPECIFIC STYLES ============ -->
+<style>
+    #expensesPage {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 52px);
+        height: calc(100svh - var(--topbar-height) - 52px);
+    }
+    @media (max-width: 991px) {
+        #expensesPage {
+            height: calc(100vh - var(--topbar-height) - 108px);
+            height: calc(100svh - var(--topbar-height) - 108px);
+        }
+    }
+
+    .expenses-header-block { flex-shrink: 0; }
+
+    .expenses-table-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-scroll-box {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .table-scroll-box::-webkit-scrollbar { display: none; }
+
+    .table-scroll-box .ck-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    @media (max-width: 767px) {
+        .table-scroll-box { padding: 4px 4px 12px; }
+    }
+</style>
 
 <script>
 (function () {

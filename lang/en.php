@@ -1,9 +1,5 @@
 <?php
-/**
- * English Language File
- */
 return [
-    // General
     "app_name" => "Cash Khata",
     "login" => "Login",
     "logout" => "Logout",
@@ -12,17 +8,14 @@ return [
     "welcome_back" => "Welcome Back",
     "login_subtitle" => "Login to manage your business",
 
-    // Sidebar / Navigation
     "dashboard" => "Dashboard",
     "purchase" => "Purchase",
     "sales" => "Sales",
     "expenses" => "Expenses",
     "settings" => "Settings",
 
-    // Top Bar
     "cash_balance" => "Cash Balance",
 
-    // Dashboard
     "total_purchase" => "Total Purchase",
     "total_sales" => "Total Sales",
     "total_profit" => "Total Profit",
@@ -34,7 +27,6 @@ return [
     "recent_purchase" => "Recent Purchase",
     "recent_sales" => "Recent Sales",
 
-    // Purchase
     "new_purchase" => "New Purchase",
     "product_name" => "Product Name",
     "description" => "Description",
@@ -49,12 +41,10 @@ return [
     "total_amount" => "Total Amount",
     "paid_amount" => "Paid Amount",
 
-    // Sales
     "sell" => "Sell",
     "customer" => "Customer",
     "stock" => "Stock",
 
-    // Common
     "save" => "Save",
     "cancel" => "Cancel",
     "close" => "Close",
@@ -68,8 +58,8 @@ return [
     "search" => "Search",
     "no_data" => "No data available",
     "loading" => "Loading",
+    "amount" => "Amount",
 
-    // Messages
     "success" => "Success",
     "error" => "Error",
     "warning" => "Warning",
@@ -78,12 +68,49 @@ return [
     "insufficient_stock" => "Insufficient Stock",
     "invalid_credentials" => "Invalid Username or Password",
 
-    // Settings
     "business_info" => "Business Information",
     "business_name" => "Business Name",
     "opening_cash" => "Opening Cash Balance",
     "language" => "Language",
     "receive_payment" => "Receive Payment",
     "make_payment" => "Make Payment",
-    "amount" => "Amount",
+
+    "my_account" => "My Account",
+    "users" => "Users",
+    "data_backup" => "Data Backup",
+    "backup_data" => "Backup Data",
+    "import_data" => "Import Data",
+    "delete_all_data" => "Delete All Data",
+    "download_backup" => "Download Backup",
+    "upload_backup" => "Upload Backup File",
+    "select_backup_file" => "Select Backup File (.json)",
+    "restore_data" => "Restore Data",
+   "delete_warning" => "This will permanently erase all business data. This cannot be undone.",
+    "confirm_password_again" => "Confirm Password Again",
+    "delete_permanently" => "Delete Permanently",
+    "transaction_history" => "Transaction History",
+    "type" => "Type",
+    "note" => "Note",
+    "by" => "By",
+    "joined" => "Joined",
+    "select_tab_hint" => "Select a tab above to manage your settings",
+    "account_subtitle" => "Update your name, username or password",
+    "business_subtitle" => "Update your shop details",
+    "cash_subtitle" => "Add or withdraw cash and view transaction history",
+    "users_subtitle" => "Add employees who can log in to this system",
+    "data_subtitle" => "Backup, restore or delete your data",
+    "backup_data_desc" => "Download all your data as a JSON file",
+    "import_data_desc" => "Upload a JSON backup to restore your data",
+    "delete_data_desc" => "Permanently erase all business data",
+    "language_subtitle" => "Select your preferred language. The interface will update immediately.",
+    "settings_subtitle" => "Manage business, cash, users, customers and suppliers",
+    "leave_blank_password" => "Leave blank to keep current password",
+    "current_due" => "Current Due",
+    "added" => "Added",
+    "withdrawn" => "Withdrawn",
+    "paid" => "Paid",
+    "partial" => "Partial",
+    "add_cash" => "Add Cash",
+    "withdraw_cash" => "Withdraw Cash",
+    "you" => "You",
 ];

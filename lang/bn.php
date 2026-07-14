@@ -1,9 +1,5 @@
 <?php
-/**
- * Bangla Language File
- */
 return [
-    // General
     "app_name" => "ক্যাশ খাতা",
     "login" => "লগইন",
     "logout" => "লগআউট",
@@ -12,17 +8,14 @@ return [
     "welcome_back" => "স্বাগতম",
     "login_subtitle" => "আপনার ব্যবসা পরিচালনা করতে লগইন করুন",
 
-    // Sidebar / Navigation
     "dashboard" => "ড্যাশবোর্ড",
     "purchase" => "ক্রয়",
     "sales" => "বিক্রয়",
     "expenses" => "খরচ",
     "settings" => "সেটিংস",
 
-    // Top Bar
     "cash_balance" => "ক্যাশ ব্যালেন্স",
 
-    // Dashboard
     "total_purchase" => "মোট ক্রয়",
     "total_sales" => "মোট বিক্রয়",
     "total_profit" => "মোট লাভ",
@@ -34,7 +27,6 @@ return [
     "recent_purchase" => "সাম্প্রতিক ক্রয়",
     "recent_sales" => "সাম্প্রতিক বিক্রয়",
 
-    // Purchase
     "new_purchase" => "নতুন ক্রয়",
     "product_name" => "পণ্যের নাম",
     "description" => "বিবরণ",
@@ -49,12 +41,10 @@ return [
     "total_amount" => "মোট টাকা",
     "paid_amount" => "পরিশোধিত টাকা",
 
-    // Sales
     "sell" => "বিক্রি করুন",
     "customer" => "কাস্টমার",
     "stock" => "স্টক",
 
-    // Common
     "save" => "সংরক্ষণ করুন",
     "cancel" => "বাতিল",
     "close" => "বন্ধ করুন",
@@ -68,8 +58,8 @@ return [
     "search" => "খুঁজুন",
     "no_data" => "কোনো তথ্য নেই",
     "loading" => "লোড হচ্ছে",
+    "amount" => "টাকার পরিমাণ",
 
-    // Messages
     "success" => "সফল হয়েছে",
     "error" => "ত্রুটি",
     "warning" => "সতর্কতা",
@@ -78,12 +68,49 @@ return [
     "insufficient_stock" => "পর্যাপ্ত স্টক নেই",
     "invalid_credentials" => "ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়",
 
-    // Settings
     "business_info" => "ব্যবসার তথ্য",
     "business_name" => "ব্যবসার নাম",
     "opening_cash" => "প্রাথমিক ক্যাশ ব্যালেন্স",
     "language" => "ভাষা",
     "receive_payment" => "টাকা গ্রহণ করুন",
     "make_payment" => "টাকা পরিশোধ করুন",
-    "amount" => "টাকার পরিমাণ",
+
+    "my_account" => "আমার একাউন্ট",
+    "users" => "ইউজার",
+    "data_backup" => "ডাটা ব্যাকআপ",
+    "backup_data" => "ব্যাকআপ ডাউনলোড",
+    "import_data" => "ডাটা ইমপোর্ট",
+    "delete_all_data" => "সম্পূর্ণ ডাটা মুছুন",
+    "download_backup" => "ব্যাকআপ ডাউনলোড করুন",
+    "upload_backup" => "ব্যাকআপ ফাইল আপলোড করুন",
+    "select_backup_file" => "ব্যাকআপ ফাইল সিলেক্ট করুন (.json)",
+    "restore_data" => "ডাটা রিস্টোর করুন",
+   "delete_warning" => "এতে সব ব্যবসার ডাটা স্থায়ীভাবে মুছে যাবে, ফেরত আনা যাবে না।",
+    "confirm_password_again" => "আবার পাসওয়ার্ড নিশ্চিত করুন",
+    "delete_permanently" => "স্থায়ীভাবে মুছুন",
+    "transaction_history" => "লেনদেনের ইতিহাস",
+    "type" => "ধরন",
+    "note" => "নোট",
+    "by" => "কার দ্বারা",
+    "joined" => "যোগদান",
+    "select_tab_hint" => "সেটিংস পরিচালনা করতে উপরের একটি ট্যাব নির্বাচন করুন",
+    "account_subtitle" => "আপনার নাম, ইউজারনেম বা পাসওয়ার্ড পরিবর্তন করুন",
+    "business_subtitle" => "আপনার দোকানের তথ্য আপডেট করুন",
+    "cash_subtitle" => "ক্যাশ যোগ/উত্তোলন করুন এবং লেনদেনের ইতিহাস দেখুন",
+    "users_subtitle" => "যেসব কর্মচারী লগইন করতে পারবে তাদের যোগ করুন",
+    "data_subtitle" => "ডাটা ব্যাকআপ, রিস্টোর বা মুছুন",
+    "backup_data_desc" => "সব ডাটা JSON ফাইল হিসেবে ডাউনলোড করুন",
+    "import_data_desc" => "JSON ব্যাকআপ আপলোড করে ডাটা রিস্টোর করুন",
+    "delete_data_desc" => "সব ব্যবসার ডাটা স্থায়ীভাবে মুছে যাবে",
+    "language_subtitle" => "আপনার পছন্দের ভাষা নির্বাচন করুন। সাথে সাথে ইন্টারফেস পরিবর্তন হবে।",
+    "settings_subtitle" => "ব্যবসা, ক্যাশ, ইউজার, কাস্টমার এবং সাপ্লায়ার পরিচালনা করুন",
+    "leave_blank_password" => "পরিবর্তন না করলে ফাঁকা রাখুন",
+    "current_due" => "বর্তমান বাকি",
+    "added" => "যোগ হয়েছে",
+    "withdrawn" => "উত্তোলন হয়েছে",
+    "paid" => "পরিশোধিত",
+    "partial" => "আংশিক",
+    "add_cash" => "ক্যাশ যোগ করুন",
+    "withdraw_cash" => "ক্যাশ উত্তোলন করুন",
+    "you" => "আপনি",
 ];

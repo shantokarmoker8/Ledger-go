@@ -3,8 +3,8 @@ require_once __DIR__ . '/../includes/auth_check.php';
 ?>
 <div id="dashboardPage">
 
-    <!-- ============ FIXED TOP SECTION ============ -->
-    <div class="dashboard-fixed-top" id="dashboardStickyTop">
+    <!-- ============ HEADER BLOCK: Title + Period + Cards + Add Buttons (Fixed Size) ============ -->
+    <div class="dashboard-header-block">
 
         <div class="dash-header-row">
             <div class="dash-header-text">
@@ -31,20 +31,17 @@ require_once __DIR__ . '/../includes/auth_check.php';
         </div>
     </div>
 
-    <!-- ============ SPACER: Fixed Header-এর সমান জায়গা ফাঁকা রাখে (JS দিয়ে Height সেট হয়) ============ -->
-    <div id="dashboardTopSpacer"></div>
-
-    <!-- ============ SCROLLABLE SECTION: Recent Purchase/Sales ============ -->
+    <!-- ============ RECENT GRID: বাকি সব জায়গা নিবে, ভেতরের List Scroll হবে ============ -->
     <div class="recent-grid" id="recentGrid">
-        <div class="ck-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="ck-card recent-card">
+            <div class="d-flex justify-content-between align-items-center mb-3 recent-card-head">
                 <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_purchase'); ?></h6>
                 <i class="fa-solid fa-cart-shopping recent-nav-icon" id="goToPurchase" title="View Purchase List"></i>
             </div>
             <div class="recent-scroll-body" id="recentPurchaseList"></div>
         </div>
-        <div class="ck-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="ck-card recent-card">
+            <div class="d-flex justify-content-between align-items-center mb-3 recent-card-head">
                 <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_sales'); ?></h6>
                 <i class="fa-solid fa-tags recent-nav-icon" id="goToSales" title="View Sales List"></i>
             </div>
@@ -137,25 +134,25 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
-    /* ============ Fixed Top Section (sticky-এর বদলে fixed — Mobile-এ কোনো Wobble হয় না) ============ */
-    .dashboard-fixed-top {
-        position: fixed;
-        top: var(--topbar-height);
-        left: var(--sidebar-width);
-        right: 0;
-        z-index: 40;
-        background: var(--body-bg);
-        padding: 12px 26px 10px;
-        transition: left 0.2s ease;
+    /* ============ পুরো Page Exactly Display-এর সমান Height-এ Fix ============ */
+    #dashboardPage {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 52px);
+        height: calc(100svh - var(--topbar-height) - 52px);
+    }
+    @media (max-width: 991px) {
+        #dashboardPage {
+            height: calc(100vh - var(--topbar-height) - 108px);
+            height: calc(100svh - var(--topbar-height) - 108px);
+        }
     }
 
+    .dashboard-header-block { flex-shrink: 0; }
+
     .dash-header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: 10px;
-        margin-bottom: 14px;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: nowrap; gap: 10px; margin-bottom: 14px;
     }
     .dash-header-text { min-width: 0; }
     .dash-header-text h4 {
@@ -189,19 +186,39 @@ require_once __DIR__ . '/../includes/auth_check.php';
     .summary-card .sc-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .summary-card .sc-value { font-size: 16px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ============ Recent Grid ============ */
-    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
-    .recent-scroll-body { max-height: 320px; overflow-y: auto; padding-right: 4px; }
+    /* ============ Recent Grid: বাকি জায়গা নিবে, ভেতরে Scroll ============ */
+    .recent-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 6px;
+    }
+    .recent-card {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100%;
+    }
+    .recent-card-head { flex-shrink: 0; }
+    .recent-scroll-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-right: 4px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .recent-scroll-body::-webkit-scrollbar { display: none; }
+
     .recent-nav-icon {
         cursor: pointer; color: var(--text-muted); font-size: 15px; transition: color 0.2s ease;
         width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
         border-radius: 8px;
     }
     .recent-nav-icon:hover { color: var(--primary-blue); background: var(--light-blue); }
-
-    @media (max-width: 991px) {
-        .dashboard-fixed-top { left: 0; padding: 12px 16px 10px; }
-    }
 
     @media (max-width: 767px) {
         .dash-header-text h4 { font-size: 16px; }
@@ -215,11 +232,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
         .summary-card .sc-value { font-size: 11px; }
 
         .recent-grid {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px;
-            padding-bottom: 6px; -webkit-overflow-scrolling: touch;
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 12px;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
         }
-        .recent-grid > .ck-card { flex: 0 0 100%; scroll-snap-align: start; }
-        .recent-scroll-body { max-height: 260px; }
+        .recent-grid > .recent-card { flex: 0 0 100%; scroll-snap-align: start; }
     }
 
     @media (max-width: 380px) {
@@ -269,15 +289,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
         if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
         return Math.floor(diff / 86400) + 'd ago';
-    }
-
-    /* ============ FIXED HEADER-এর সমান Spacer Height সেট করা (Wobble Fix) ============ */
-    function syncTopSpacer() {
-        const topEl = document.getElementById('dashboardStickyTop');
-        const spacer = document.getElementById('dashboardTopSpacer');
-        if (topEl && spacer) {
-            spacer.style.height = topEl.offsetHeight + 'px';
-        }
     }
 
     function goToSettingsTab(tab) {
@@ -359,9 +370,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
                     </div>
                 `).join('');
             }
-
-            // Card রেন্ডার হওয়ার পর Header-এর Height পরিবর্তন হতে পারে, তাই আবার Spacer Sync করা
-            requestAnimationFrame(syncTopSpacer);
         } catch (err) {
             ckToast('error', 'Something went wrong while loading dashboard');
         }
@@ -513,10 +521,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     }
 
-    /* ============ Window Resize/Orientation Change হলেও Spacer ঠিক থাকবে ============ */
-    window.addEventListener('resize', syncTopSpacer);
-
     loadDashboard('today');
-    setTimeout(syncTopSpacer, 100);
 })();
 </script>
