@@ -1,445 +1,226 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
-require_once __DIR__ . '/../config/db.php';
-$settings = $pdo->query("SELECT * FROM settings LIMIT 1")->fetch();
-$currentLang = $_SESSION['language'] ?? 'en';
 ?>
-<div id="settingsPage">
+<div id="salesPage">
 
-    <!-- ============ HEADER: Desktop বামে, Mobile মাঝখানে ============ -->
-    <div class="settings-header">
-        <h4><?php echo lang('settings'); ?></h4>
-        <p><?php echo lang('settings_subtitle'); ?></p>
-    </div>
-
-    <!-- ============ শুধু বাটন — কোনো Inline Content নেই, ক্লিক করলে Popup খুলবে ============ -->
-    <div class="settings-tabs">
-        <button class="settings-tab" data-modal="accountModal"><i class="fa-solid fa-user"></i> <?php echo lang('my_account'); ?></button>
-        <button class="settings-tab" data-modal="businessModal"><i class="fa-solid fa-store"></i> <?php echo lang('business_info'); ?></button>
-        <button class="settings-tab" data-modal="cashModal"><i class="fa-solid fa-sack-dollar"></i> <?php echo lang('cash_balance'); ?></button>
-        <button class="settings-tab" data-modal="usersModal"><i class="fa-solid fa-user-group"></i> <?php echo lang('users'); ?></button>
-        <button class="settings-tab" data-modal="languageModal"><i class="fa-solid fa-language"></i> <?php echo lang('language'); ?></button>
-        <button class="settings-tab" data-modal="customersModal"><i class="fa-solid fa-users"></i> <?php echo lang('customer'); ?></button>
-        <button class="settings-tab" data-modal="suppliersModal"><i class="fa-solid fa-truck"></i> <?php echo lang('supplier'); ?></button>
-        <button class="settings-tab" data-modal="dataModal"><i class="fa-solid fa-database"></i> <?php echo lang('data_backup'); ?></button>
-    </div>
-</div>
-
-<!-- ============ MODAL: MY ACCOUNT ============ -->
-<div class="ck-modal-overlay" id="accountModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:420px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('my_account'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="accountModal"></i>
-        </div>
-        <div class="text-center mb-3">
-            <div class="profile-avatar" style="width:56px;height:56px;font-size:22px;margin:0 auto 10px;">
-                <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'U', 0, 1)); ?>
+    <!-- ============ HEADER BLOCK: Title + History Toggle + Search (Fixed Size) ============ -->
+    <div class="sales-header-block">
+        <div class="page-head mb-3">
+            <div>
+                <h4><?php echo lang('sales'); ?></h4>
+                <p>Sell products from your available stock</p>
             </div>
-            <p class="text-muted mb-0" style="font-size:12px;"><?php echo lang('account_subtitle'); ?></p>
-        </div>
-        <form id="myAccountForm">
-            <label class="ck-label"><?php echo lang('name'); ?></label>
-            <input type="text" class="ck-input" id="myFullName" value="<?php echo htmlspecialchars($_SESSION['full_name'] ?? ''); ?>" required>
-
-            <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
-            <input type="text" class="ck-input" id="myUsername" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
-
-            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
-            <input type="text" class="ck-input" id="myPassword" placeholder="<?php echo lang('leave_blank_password'); ?>">
-
-            <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="myAccountSaveBtn">
-                <i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>
+            <button class="ck-btn ck-btn-outline" id="btnToggleHistory">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span id="toggleHistoryText">View History</span>
             </button>
-        </form>
+        </div>
+
+        <div class="ck-card mb-3">
+            <div class="input-group-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="salesSearch" placeholder="<?php echo lang('search'); ?> products...">
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SALES BODY: বাকি সব জায়গা নিবে, ভেতরে শুধু Table Scroll হবে ============ -->
+    <div class="sales-body">
+
+        <!-- ============ PRODUCT LIST (TABLE, sell mode) ============ -->
+        <div id="productGridView" class="sales-view">
+            <div class="ck-card p-0 sales-table-card">
+                <div class="table-responsive table-scroll-box" id="productTableScroll">
+                    <table class="ck-table">
+                        <thead>
+                            <tr>
+                                <th><?php echo lang('product_name'); ?></th>
+                                <th><?php echo lang('description'); ?></th>
+                                <th><?php echo lang('sale_price'); ?></th>
+                                <th><?php echo lang('stock'); ?></th>
+                                <th><?php echo lang('action'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SALES HISTORY (TABLE) ============ -->
+        <div id="salesHistoryView" class="sales-view" style="display:none;">
+            <div class="ck-card p-0 sales-table-card">
+                <div class="table-responsive table-scroll-box" id="salesHistoryTableScroll">
+                    <table class="ck-table">
+                        <thead>
+                            <tr>
+                                <th><?php echo lang('product_name'); ?></th>
+                                <th><?php echo lang('customer'); ?></th>
+                                <th><?php echo lang('quantity'); ?></th>
+                                <th><?php echo lang('sale_price'); ?></th>
+                                <th><?php echo lang('total_amount'); ?></th>
+                                <th>Status</th>
+                                <th><?php echo lang('date'); ?></th>
+                                <th><?php echo lang('action'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody">
+                            <tr><td colspan="8" class="text-center py-4 text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- ============ MODAL: BUSINESS INFO ============ -->
-<div class="ck-modal-overlay" id="businessModal" style="display:none;">
+<!-- ============ MODAL: SELL PRODUCT ============ -->
+<div class="ck-modal-overlay" id="sellProductOverlay" style="display:none;">
     <div class="ck-modal-box" style="max-width:460px;">
         <div class="ck-modal-header">
-            <h5><?php echo lang('business_info'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="businessModal"></i>
+            <h5><?php echo lang('sell'); ?>: <span id="sellProductName"></span></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="sellProductOverlay"></i>
         </div>
-        <p class="text-muted mb-3" style="font-size:12px;"><?php echo lang('business_subtitle'); ?></p>
-        <form id="businessInfoForm">
-            <label class="ck-label"><?php echo lang('business_name'); ?></label>
-            <input type="text" class="ck-input" id="businessNameInput" value="<?php echo htmlspecialchars($settings['business_name']); ?>" required>
 
-            <label class="ck-label mt-2"><?php echo lang('address'); ?></label>
-            <input type="text" class="ck-input" id="businessAddressInput" value="<?php echo htmlspecialchars($settings['business_address']); ?>">
+        <form id="sellProductForm">
+            <input type="hidden" id="sellProductId">
+            <input type="hidden" id="sellProductCostPrice">
 
-            <label class="ck-label mt-2">Phone</label>
-            <input type="text" class="ck-input" id="businessPhoneInput" value="<?php echo htmlspecialchars($settings['business_phone']); ?>">
+            <p class="text-muted mb-3" style="font-size:12px;">
+                <?php echo lang('stock'); ?>: <span id="sellAvailableStock" style="font-weight:600;color:var(--text-dark);"></span>
+            </p>
 
-            <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="businessSaveBtn">
-                <i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>
-            </button>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="ck-label"><?php echo lang('quantity'); ?></label>
+                    <input type="number" min="1" class="ck-input" id="sellQuantityInput" required>
+                </div>
+                <div class="col-6">
+                    <label class="ck-label"><?php echo lang('sale_price'); ?></label>
+                    <input type="number" step="0.01" min="0.01" class="ck-input" id="sellPriceInput" required>
+                </div>
+            </div>
+
+            <label class="ck-label mt-2"><?php echo lang('customer'); ?> <span class="text-muted">(optional)</span></label>
+            <div class="d-flex gap-2">
+                <select class="ck-select" id="sellCustomerSelect">
+                    <option value="">-- Walk-in Customer --</option>
+                </select>
+                <button type="button" class="ck-btn ck-btn-outline" id="btnQuickAddCustomer" style="padding:10px 14px;" title="Add New Customer">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="row g-2 mt-1">
+                <div class="col-6">
+                    <label class="ck-label">Gross Amount</label>
+                    <div class="ck-input" style="background:#f8fafc;color:var(--text-muted);" id="sellGrossDisplay">৳0.00</div>
+                </div>
+                <div class="col-6">
+                    <label class="ck-label">Discount</label>
+                    <input type="number" step="0.01" min="0" class="ck-input" id="sellDiscountInput" placeholder="0.00" value="0">
+                </div>
+            </div>
+            <p class="text-muted mb-0 mt-1" style="font-size:11px;">Max Discount (No Loss): <span id="sellMaxDiscountText" style="font-weight:600;color:var(--success);">৳0.00</span></p>
+            <p class="mb-0 mt-1" id="sellDiscountWarning" style="font-size:11px;color:var(--danger);display:none;">
+                <i class="fa-solid fa-triangle-exclamation"></i> এর বেশি Discount দিলে Loss হবে!
+            </p>
+
+            <div class="ck-total-box mt-2">
+                <span><?php echo lang('total_amount'); ?> (After Discount)</span>
+                <span id="sellTotalDisplay">৳0.00</span>
+            </div>
+
+            <label class="ck-label mt-3">Pay Amount</label>
+            <input type="number" step="0.01" min="0" class="ck-input" id="sellPaidAmountInput" placeholder="0.00">
+
+            <div class="d-flex justify-content-between mt-2" style="font-size:12px;">
+                <span class="text-muted">Due Amount</span>
+                <span id="sellDueDisplay" style="font-weight:600;color:var(--danger);">৳0.00</span>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="sellProductOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center" id="sellSaveBtn"><?php echo lang('sell'); ?></button>
+            </div>
         </form>
     </div>
 </div>
 
-<!-- ============ MODAL: CASH BALANCE (Mobile-Friendly, শুধু History Scroll হবে) ============ -->
-<div class="ck-modal-overlay" id="cashModal" style="display:none;">
-    <div class="ck-modal-box cash-modal-box" style="max-width:820px;">
+<!-- ============ MODAL: QUICK ADD CUSTOMER ============ -->
+<div class="ck-modal-overlay" id="quickCustomerOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:380px;">
         <div class="ck-modal-header">
-            <h5><?php echo lang('cash_balance'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="cashModal"></i>
+            <h5><?php echo lang('add_customer'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="quickCustomerOverlay"></i>
         </div>
-
-        <div class="cash-modal-flex">
-
-            <div class="cash-modal-left">
-                <div class="ck-card mb-2" style="padding:14px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="width:40px;height:40px;background:#eff6ff;color:#2563eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">
-                            <i class="fa-solid fa-sack-dollar"></i>
-                        </div>
-                        <div>
-                            <div class="text-muted" style="font-size:11px;"><?php echo lang('cash_balance'); ?></div>
-                            <div id="currentCashDisplay" style="font-weight:700;font-size:17px;color:var(--primary-blue);"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ck-card" style="padding:14px;">
-                    <div class="ck-toggle-tabs mb-2">
-                        <button type="button" class="ck-toggle-btn active" data-cashmode="add"><i class="fa-solid fa-plus"></i> <?php echo lang('add_cash'); ?></button>
-                        <button type="button" class="ck-toggle-btn" data-cashmode="withdraw"><i class="fa-solid fa-minus"></i> <?php echo lang('withdraw_cash'); ?></button>
-                    </div>
-
-                    <form id="cashTransactionForm">
-                        <label class="ck-label"><?php echo lang('amount'); ?></label>
-                        <input type="number" step="0.01" min="0.01" class="ck-input" id="cashAmountInput" placeholder="e.g. 5000" required>
-
-                        <label class="ck-label mt-2"><?php echo lang('note'); ?></label>
-                        <input type="text" class="ck-input" id="cashNoteInput">
-
-                        <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-2" id="cashTransactionSaveBtn">
-                            <i class="fa-solid fa-check"></i> <span id="cashTransactionBtnText"><?php echo lang('add_cash'); ?></span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="cash-modal-right">
-                <div class="ck-card p-0 cash-history-card">
-                    <div class="p-2 pb-1" style="flex-shrink:0;">
-                        <h6 style="font-weight:600;margin-bottom:0;font-size:13px;"><?php echo lang('transaction_history'); ?></h6>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="ck-table">
-                            <thead>
-                                <tr>
-                                    <th><?php echo lang('type'); ?></th>
-                                    <th><?php echo lang('amount'); ?></th>
-                                    <th><?php echo lang('note'); ?></th>
-                                    <th><?php echo lang('by'); ?></th>
-                                    <th><?php echo lang('date'); ?></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cashHistoryTableBody">
-                                <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: USERS ============ -->
-<div class="ck-modal-overlay" id="usersModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:640px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('users'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="usersModal"></i>
-        </div>
-        <div class="settings-inner-head">
-            <p class="text-muted mb-0" style="font-size:12px;"><?php echo lang('users_subtitle'); ?></p>
-            <button class="ck-btn ck-btn-primary" id="btnAddUser">
-                <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
-            </button>
-        </div>
-        <div class="ck-card p-0">
-            <div class="table-responsive fixed-scroll-area">
-                <table class="ck-table">
-                    <thead>
-                        <tr>
-                            <th><?php echo lang('name'); ?></th>
-                            <th><?php echo lang('username'); ?></th>
-                            <th><?php echo lang('joined'); ?></th>
-                            <th><?php echo lang('action'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: LANGUAGE ============ -->
-<div class="ck-modal-overlay" id="languageModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:420px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('language'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="languageModal"></i>
-        </div>
-        <p class="text-muted mb-3" style="font-size:12px;"><?php echo lang('language_subtitle'); ?></p>
-        <div class="row g-3">
-            <div class="col-6">
-                <div class="lang-option <?php echo $currentLang === 'en' ? 'active' : ''; ?>" data-lang="en">
-                    <i class="fa-solid fa-check lang-check"></i>
-                    <div style="font-size:22px;">🇬🇧</div>
-                    <div style="font-weight:600;margin-top:8px;">English</div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="lang-option <?php echo $currentLang === 'bn' ? 'active' : ''; ?>" data-lang="bn">
-                    <i class="fa-solid fa-check lang-check"></i>
-                    <div style="font-size:22px;">🇧🇩</div>
-                    <div style="font-weight:600;margin-top:8px;">বাংলা</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: CUSTOMERS ============ -->
-<div class="ck-modal-overlay" id="customersModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:640px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('customer'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="customersModal"></i>
-        </div>
-        <div class="ck-card mb-3">
-            <div class="input-group-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="customerSearchInput" placeholder="<?php echo lang('search'); ?> customers...">
-            </div>
-        </div>
-        <div class="ck-card p-0">
-            <div class="table-responsive fixed-scroll-area">
-                <table class="ck-table">
-                    <thead>
-                        <tr>
-                            <th><?php echo lang('name'); ?></th>
-                            <th><?php echo lang('mobile'); ?></th>
-                            <th><?php echo lang('customer_due'); ?></th>
-                            <th><?php echo lang('action'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="customerTableBody">
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: SUPPLIERS ============ -->
-<div class="ck-modal-overlay" id="suppliersModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:640px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('supplier'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="suppliersModal"></i>
-        </div>
-        <div class="ck-card mb-3">
-            <div class="input-group-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="supplierSearchInput" placeholder="<?php echo lang('search'); ?> suppliers...">
-            </div>
-        </div>
-        <div class="ck-card p-0">
-            <div class="table-responsive fixed-scroll-area">
-                <table class="ck-table">
-                    <thead>
-                        <tr>
-                            <th><?php echo lang('name'); ?></th>
-                            <th><?php echo lang('mobile'); ?></th>
-                            <th><?php echo lang('supplier_due'); ?></th>
-                            <th><?php echo lang('action'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="supplierTableBody">
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: DATA (BACKUP / IMPORT / DELETE) ============ -->
-<div class="ck-modal-overlay" id="dataModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:720px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('data_backup'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="dataModal"></i>
-        </div>
-        <p class="text-muted mb-3 text-center" style="font-size:12px;"><?php echo lang('data_subtitle'); ?></p>
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-cloud-arrow-down"></i></div>
-                    <h6 style="font-weight:600;margin:10px 0 4px;font-size:13px;"><?php echo lang('backup_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:11px;"><?php echo lang('backup_data_desc'); ?></p>
-                    <button class="ck-btn ck-btn-primary w-100 justify-content-center" id="btnDownloadBackup">
-                        <i class="fa-solid fa-download"></i> <?php echo lang('download_backup'); ?>
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                    <h6 style="font-weight:600;margin:10px 0 4px;font-size:13px;"><?php echo lang('import_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:11px;"><?php echo lang('import_data_desc'); ?></p>
-                    <input type="file" accept=".json,application/json" id="importFileInput" style="display:none;">
-                    <button class="ck-btn ck-btn-success-soft w-100 justify-content-center" id="btnImportData">
-                        <i class="fa-solid fa-upload"></i> <?php echo lang('upload_backup'); ?>
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-trash-can"></i></div>
-                    <h6 style="font-weight:600;margin:10px 0 4px;font-size:13px;"><?php echo lang('delete_all_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:11px;"><?php echo lang('delete_data_desc'); ?></p>
-                    <button class="ck-btn ck-btn-danger-soft w-100 justify-content-center" id="btnOpenDeleteAll">
-                        <i class="fa-solid fa-triangle-exclamation"></i> <?php echo lang('delete_all_data'); ?>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ SUB-MODAL: ADD USER ============ -->
-<div class="ck-modal-overlay" id="addUserOverlay" style="display:none;z-index:2100;">
-    <div class="ck-modal-box" style="max-width:400px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('users'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="addUserOverlay"></i>
-        </div>
-        <form id="addUserForm">
+        <form id="quickCustomerForm">
             <label class="ck-label"><?php echo lang('name'); ?></label>
-            <input type="text" class="ck-input" id="userFullName" required>
+            <input type="text" class="ck-input" id="qcName" required>
 
-            <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
-            <input type="text" class="ck-input" id="userUsername" required>
+            <label class="ck-label mt-2"><?php echo lang('mobile'); ?></label>
+            <input type="text" class="ck-input" id="qcMobile" required>
 
-            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
-            <input type="text" class="ck-input" id="userPassword" required>
+            <label class="ck-label mt-2"><?php echo lang('address'); ?> <span class="text-muted">(optional)</span></label>
+            <input type="text" class="ck-input" id="qcAddress">
 
             <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="addUserOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="quickCustomerOverlay"><?php echo lang('cancel'); ?></button>
                 <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ============ SUB-MODAL: EDIT USER ============ -->
-<div class="ck-modal-overlay" id="editUserOverlay" style="display:none;z-index:2100;">
+<!-- ============ MODAL: RETURN PRODUCT ============ -->
+<div class="ck-modal-overlay" id="returnOverlay" style="display:none;">
     <div class="ck-modal-box" style="max-width:400px;">
         <div class="ck-modal-header">
-            <h5><?php echo lang('edit'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="editUserOverlay"></i>
+            <h5>Return Product</h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="returnOverlay"></i>
         </div>
-        <form id="editUserForm">
-            <input type="hidden" id="editUserId">
+        <form id="returnForm">
+            <input type="hidden" id="returnSaleId">
+            <p style="font-size:13px;">Product: <strong id="returnProductName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Sold Quantity: <span id="returnSoldQty" style="font-weight:600;"></span></p>
 
-            <label class="ck-label"><?php echo lang('name'); ?></label>
-            <input type="text" class="ck-input" id="editUserFullName" required>
+            <label class="ck-label mt-2">Return Quantity</label>
+            <input type="number" min="1" class="ck-input" id="returnQtyInput" required>
 
-            <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
-            <input type="text" class="ck-input" id="editUserUsername" required>
-
-            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
-            <input type="text" class="ck-input" id="editUserPassword" placeholder="<?php echo lang('leave_blank_password'); ?>">
+            <div class="ck-total-box mt-3">
+                <span>Refund Amount</span>
+                <span id="returnAmountDisplay">৳0.00</span>
+            </div>
+            <p class="text-muted mb-0 mt-2" style="font-size:11px;">Stock ফেরত যাবে, এবং Refund Amount Cash Balance অথবা Customer Due থেকে সমন্বয় হবে।</p>
 
             <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="editUserOverlay"><?php echo lang('cancel'); ?></button>
-                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="returnOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-danger-soft flex-fill justify-content-center" id="returnSaveBtn">Confirm Return</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ============ SUB-MODAL: RECEIVE PAYMENT (CUSTOMER) ============ -->
-<div class="ck-modal-overlay" id="customerPaymentOverlay" style="display:none;z-index:2100;">
-    <div class="ck-modal-box" style="max-width:400px;">
+<!-- ============ MODAL: PAY SALE DUE ============ -->
+<div class="ck-modal-overlay" id="salesPayDueOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:380px;">
         <div class="ck-modal-header">
-            <h5><?php echo lang('receive_payment'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="customerPaymentOverlay"></i>
+            <h5>Pay Due</h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="salesPayDueOverlay"></i>
         </div>
-        <form id="customerPaymentForm">
-            <input type="hidden" id="paymentCustomerId">
-            <p style="font-size:13px;"><?php echo lang('customer'); ?>: <strong id="paymentCustomerName"></strong></p>
-            <p class="text-muted" style="font-size:12px;"><?php echo lang('current_due'); ?>: <span id="paymentCustomerDue" style="font-weight:600;color:var(--danger);"></span></p>
+        <form id="salesPayDueForm">
+            <input type="hidden" id="salesPayDueSaleId">
+            <p style="font-size:13px;">Product: <strong id="salesPayDueProductName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Customer: <strong id="salesPayDueCustomerName"></strong></p>
+            <p class="text-muted" style="font-size:12px;">Due Amount: <span id="salesPayDueAmountText" style="font-weight:600;color:var(--danger);"></span></p>
 
             <label class="ck-label mt-2"><?php echo lang('amount'); ?></label>
-            <input type="number" step="0.01" min="0.01" class="ck-input" id="customerPaymentAmount" required>
+            <input type="number" step="0.01" min="0.01" class="ck-input" id="salesPayDueAmountInput" required>
 
             <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="customerPaymentOverlay"><?php echo lang('cancel'); ?></button>
-                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ============ SUB-MODAL: MAKE PAYMENT (SUPPLIER) ============ -->
-<div class="ck-modal-overlay" id="supplierPaymentOverlay" style="display:none;z-index:2100;">
-    <div class="ck-modal-box" style="max-width:400px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('make_payment'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="supplierPaymentOverlay"></i>
-        </div>
-        <form id="supplierPaymentForm">
-            <input type="hidden" id="paymentSupplierId">
-            <p style="font-size:13px;"><?php echo lang('supplier'); ?>: <strong id="paymentSupplierName"></strong></p>
-            <p class="text-muted" style="font-size:12px;"><?php echo lang('current_due'); ?>: <span id="paymentSupplierDue" style="font-weight:600;color:var(--danger);"></span></p>
-
-            <label class="ck-label mt-2"><?php echo lang('amount'); ?></label>
-            <input type="number" step="0.01" min="0.01" class="ck-input" id="supplierPaymentAmount" required>
-
-            <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="supplierPaymentOverlay"><?php echo lang('cancel'); ?></button>
-                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ============ SUB-MODAL: DELETE ALL DATA (Double Password) ============ -->
-<div class="ck-modal-overlay" id="deleteAllOverlay" style="display:none;z-index:2100;">
-    <div class="ck-modal-box" style="max-width:400px;">
-        <div class="ck-modal-header">
-            <h5 style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> <?php echo lang('delete_all_data'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="deleteAllOverlay"></i>
-        </div>
-        <p class="text-muted" style="font-size:11px;"><?php echo lang('delete_warning'); ?></p>
-        <form id="deleteAllForm">
-            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
-            <input type="password" class="ck-input" id="deletePassword1" required>
-
-            <label class="ck-label mt-2"><?php echo lang('confirm_password_again'); ?></label>
-            <input type="password" class="ck-input" id="deletePassword2" required>
-
-            <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="deleteAllOverlay"><?php echo lang('cancel'); ?></button>
-                <button type="submit" class="ck-btn ck-btn-danger-soft flex-fill justify-content-center" id="deleteAllSaveBtn"><?php echo lang('delete_permanently'); ?></button>
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="salesPayDueOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center">Pay</button>
             </div>
         </form>
     </div>
@@ -447,670 +228,450 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
-    /* ============ HEADER: Desktop বামে, Mobile মাঝখানে ============ */
-    .settings-header { margin-bottom: 20px; width: 100%; }
-    .settings-header h4 { font-weight: 600; margin: 0 0 2px; }
-    .settings-header p { color: var(--text-muted); font-size: 13px; margin: 0; }
-    .settings-header, .settings-header h4, .settings-header p { text-align: left; }
-
-    @media (max-width: 767px) {
-        .settings-header, .settings-header h4, .settings-header p { text-align: center; }
+    #salesPage {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 52px);
+        height: calc(100svh - var(--topbar-height) - 52px);
+    }
+    @media (max-width: 991px) {
+        #salesPage {
+            height: calc(100vh - var(--topbar-height) - 108px);
+            height: calc(100svh - var(--topbar-height) - 108px);
+        }
     }
 
-    /* ============ Tabs: শুধু বাটন ============ */
-    .settings-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-    .settings-tab {
-        border: 1.5px solid var(--border-color); background: #fff; color: var(--text-dark);
-        padding: 22px 16px; border-radius: 14px; font-size: 14px; font-weight: 600;
-        cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;
-        transition: all 0.15s ease;
-    }
-    .settings-tab i { font-size: 22px; color: var(--primary-blue); }
-    .settings-tab:hover { border-color: var(--primary-blue); box-shadow: 0 4px 14px rgba(37,99,235,0.1); transform: translateY(-2px); }
-    .settings-tab:active { transform: scale(0.94); }
+    .sales-header-block { flex-shrink: 0; }
 
-    .settings-inner-head {
-        display: flex; justify-content: space-between; align-items: center;
-        flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    .sales-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        position: relative;
     }
 
-    .lang-option {
-        border: 1.5px solid var(--border-color); border-radius: 12px; padding: 20px;
-        text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease;
+    .sales-view {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
-    .lang-option:hover { border-color: var(--primary-blue); }
-    .lang-option.active { border-color: var(--primary-blue); background: var(--light-blue); }
-    .lang-option .lang-check {
-        position: absolute; top: 10px; right: 10px; color: var(--primary-blue);
-        font-size: 12px; opacity: 0; transition: opacity 0.2s ease;
+
+    .sales-table-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
-    .lang-option.active .lang-check { opacity: 1; }
 
-    .cash-type-badge-add { background: #f0fdf4; color: #16a34a; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-    .cash-type-badge-withdraw { background: #fef2f2; color: #dc2626; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-    .user-you-badge { background: var(--light-blue); color: var(--primary-blue); font-size: 9px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
-
-    .data-action-card { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 22px 16px; }
-    .data-icon-box { width: 48px; height: 48px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 19px; }
-
-    /* ============ Scrollbar সম্পূর্ণ লুকানো (Modal ও Table, সব জায়গায়) ============ */
-    .ck-modal-box,
-    .table-responsive {
+    .table-scroll-box {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
-    .ck-modal-box::-webkit-scrollbar,
-    .table-responsive::-webkit-scrollbar {
-        display: none;
+    .table-scroll-box::-webkit-scrollbar { display: none; }
+
+    .table-scroll-box .ck-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
     }
-
-    .fixed-scroll-area { max-height: 360px; overflow-y: auto; }
-
-    /* ============ CASH MODAL: শুধু History Table Scroll হবে, বাকি অংশ Fix ============ */
-    .cash-modal-box { display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
-    .cash-modal-flex { display: flex; gap: 14px; flex: 1; min-height: 0; }
-    .cash-modal-left { flex: 0 0 270px; overflow-y: auto; }
-    .cash-modal-right { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-    .cash-history-card { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-    .cash-history-card .table-responsive { flex: 1; min-height: 0; overflow-y: auto; }
 
     @media (max-width: 767px) {
-        .cash-modal-flex { flex-direction: column; }
-        .cash-modal-left { flex: 0 0 auto; overflow: visible; }
-        .cash-modal-right { flex: 1; min-height: 0; }
-        .cash-history-card .table-responsive { max-height: 34vh; }
-    }
-
-    @media (max-width: 480px) {
-        .settings-tabs { grid-template-columns: repeat(2, 1fr); }
-        .settings-tab { padding: 16px 10px; font-size: 12px; }
-        .settings-tab i { font-size: 18px; }
+        .table-scroll-box { padding: 4px 4px 12px; }
     }
 </style>
 
-<!-- ============ PAGE-SPECIFIC SCRIPT ============ -->
 <script>
 (function () {
-    const currentSessionUserId = <?php echo (int) $_SESSION['user_id']; ?>;
-    const bnDigitMap = { '0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯' };
-
-    function toBn(str) { return String(str).replace(/[0-9]/g, d => bnDigitMap[d]); }
+    let productsCache = [];
+    let customersCache = [];
+    let historyMode = false;
+    let returnUnitPrice = 0;
+    let returnMaxQty = 0;
 
     function money(v) {
-        const formatted = '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        return CK.lang === 'bn' ? toBn(formatted) : formatted;
+        return '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function formatDate(dateStr) {
         const d = new Date(dateStr.replace(' ', 'T'));
-        const formatted = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        return CK.lang === 'bn' ? toBn(formatted) : formatted;
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
-    /* ============ Global Fix: SweetAlert2 Confirm Popup যেন সবসময় সবার উপরে দেখায় ============
-       এটা একবার document.head-এ যোগ হয় এবং সব Page-এই সবসময় সক্রিয় থাকে। */
-    if (!document.getElementById('ck-global-swal-fix')) {
-        const style = document.createElement('style');
-        style.id = 'ck-global-swal-fix';
-        style.textContent = `.swal2-container { z-index: 99999 !important; }`;
-        document.head.appendChild(style);
-    }
-
-    /* ============ TABS: ক্লিক করলে Modal Popup হবে ============ */
-    document.querySelectorAll('.settings-tab').forEach(tab => {
-        tab.addEventListener('click', function () {
-            const modalId = this.dataset.modal;
-            const modal = document.getElementById(modalId);
-            if (!modal) return;
-
-            modal.style.display = 'flex';
-            gsap.fromTo(modal.querySelector('.ck-modal-box'),
-                { opacity: 0, y: 16 },
-                { opacity: 1, y: 0, duration: 0.25, ease: "power2.out", clearProps: "opacity,transform" }
-            );
-
-            if (modalId === 'cashModal') loadCashHistory();
-            if (modalId === 'usersModal') loadUsers();
-            if (modalId === 'customersModal') loadCustomers();
-            if (modalId === 'suppliersModal') loadSuppliers();
-        });
-    });
-
-    /* ============ MY ACCOUNT ============ */
-    document.getElementById('myAccountForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-            id: currentSessionUserId,
-            full_name: document.getElementById('myFullName').value.trim(),
-            username: document.getElementById('myUsername').value.trim(),
-            password: document.getElementById('myPassword').value.trim()
-        };
-
-        const btn = document.getElementById('myAccountSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
+    /* ============ LOAD PRODUCT TABLE (sell mode) ============ */
+    async function loadProductTable(search = '') {
+        const tbody = document.getElementById('productTableBody');
         try {
-            const res = await fetch('api/users/update.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
+            const res = await fetch('api/sales/form_data.php');
             const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.getElementById('myPassword').value = '';
-                const topAvatar = document.querySelector('.profile-avatar');
-                const topName = document.querySelector('.profile-name');
-                if (topAvatar) topAvatar.textContent = payload.full_name.charAt(0).toUpperCase();
-                if (topName) topName.textContent = payload.full_name;
-            } else {
-                ckToast('error', result.message);
+            if (result.status !== 'success') {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load products</td></tr>`;
+                return;
             }
-        } catch (err) {
-            ckToast('error', 'Failed to update account');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>';
-        }
-    });
 
-    /* ============ BUSINESS INFO SAVE ============ */
-    document.getElementById('businessInfoForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-            business_name: document.getElementById('businessNameInput').value.trim(),
-            business_address: document.getElementById('businessAddressInput').value.trim(),
-            business_phone: document.getElementById('businessPhoneInput').value.trim()
-        };
+            productsCache = result.data.products;
+            customersCache = result.data.customers;
 
-        const btn = document.getElementById('businessSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
-            const res = await fetch('api/settings/update.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.querySelector('.sidebar-brand .brand-text').textContent = payload.business_name;
-                const topBrand = document.querySelector('.topbar-left .brand-text');
-                if (topBrand) topBrand.textContent = payload.business_name;
-            } else {
-                ckToast('error', result.message);
+            let filtered = productsCache;
+            if (search.trim() !== '') {
+                filtered = productsCache.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
             }
-        } catch (err) {
-            ckToast('error', 'Failed to update business info');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> <?php echo lang('save'); ?>';
-        }
-    });
 
-    /* ============ CASH ADD / WITHDRAW ============ */
-    let cashMode = 'add';
-
-    document.querySelectorAll('#cashModal .ck-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('#cashModal .ck-toggle-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            cashMode = this.dataset.cashmode;
-            document.getElementById('cashTransactionBtnText').textContent = cashMode === 'add' ? '<?php echo lang('add_cash'); ?>' : '<?php echo lang('withdraw_cash'); ?>';
-        });
-    });
-
-    document.getElementById('cashTransactionForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-            amount: document.getElementById('cashAmountInput').value,
-            note: document.getElementById('cashNoteInput').value.trim()
-        };
-
-        const endpoint = cashMode === 'add' ? 'api/cash/add.php' : 'api/cash/withdraw.php';
-        const btn = document.getElementById('cashTransactionSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.getElementById('currentCashDisplay').textContent = money(result.cash_balance);
-                updateCashBalance(result.cash_balance);
-                document.getElementById('cashTransactionForm').reset();
-                loadCashHistory();
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) {
-            ckToast('error', 'Failed to process cash transaction');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> <span id="cashTransactionBtnText">' + (cashMode === 'add' ? '<?php echo lang('add_cash'); ?>' : '<?php echo lang('withdraw_cash'); ?>') + '</span>';
-        }
-    });
-
-    async function loadCashHistory() {
-        const tbody = document.getElementById('cashHistoryTableBody');
-        document.getElementById('currentCashDisplay').textContent = money(<?php echo (float) $settings['cash_balance']; ?>);
-        try {
-            const res = await fetch('api/cash/history.php');
-            const result = await res.json();
-
-            if (result.status !== 'success' || result.data.length === 0) {
+            if (filtered.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = result.data.map(t => `
+            tbody.innerHTML = filtered.map(p => `
                 <tr>
-                    <td data-label="<?php echo lang('type'); ?>"><span class="${t.type === 'add' ? 'cash-type-badge-add' : 'cash-type-badge-withdraw'}">${t.type === 'add' ? '<?php echo lang('added'); ?>' : '<?php echo lang('withdrawn'); ?>'}</span></td>
-                    <td data-label="<?php echo lang('amount'); ?>" style="font-weight:600;color:${t.type === 'add' ? 'var(--success)' : 'var(--danger)'};">${t.type === 'add' ? '+' : '-'}${money(t.amount)}</td>
-                    <td data-label="<?php echo lang('note'); ?>">${t.note ? t.note : '<span class="text-muted">—</span>'}</td>
-                    <td data-label="<?php echo lang('by'); ?>">${t.user_name ? t.user_name : '<span class="text-muted">—</span>'}</td>
-                    <td data-label="<?php echo lang('date'); ?>">${formatDate(t.created_at)}</td>
-                </tr>
-            `).join('');
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error</td></tr>`;
-        }
-    }
-
-    /* ============ USERS ============ */
-    async function loadUsers() {
-        const tbody = document.getElementById('userTableBody');
-        try {
-            const res = await fetch('api/users/list.php');
-            const result = await res.json();
-
-            if (result.status !== 'success' || result.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = result.data.map(u => `
-                <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${u.full_name}${u.id === result.current_user_id ? '<span class="user-you-badge"><?php echo lang('you'); ?></span>' : ''}</td>
-                    <td data-label="<?php echo lang('username'); ?>">${u.username}</td>
-                    <td data-label="<?php echo lang('joined'); ?>">${formatDate(u.created_at)}</td>
+                    <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${p.name}</td>
+                    <td data-label="<?php echo lang('description'); ?>">${p.description ? p.description : '<span class="text-muted">—</span>'}</td>
+                    <td data-label="<?php echo lang('sale_price'); ?>" style="font-weight:600;">${money(p.sale_price)}</td>
+                    <td data-label="<?php echo lang('stock'); ?>">${p.stock}</td>
                     <td data-label="<?php echo lang('action'); ?>">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <button class="icon-btn ck-btn-outline" onclick='openEditUser(${JSON.stringify(u)})'><i class="fa-solid fa-pen"></i></button>
-                            ${u.id !== result.current_user_id ? `<button class="icon-btn ck-btn-danger-soft" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
-                        </div>
+                        <button class="ck-btn ck-btn-primary" style="padding:6px 14px;font-size:11px;" onclick="openSellModal(${p.id})"><?php echo lang('sell'); ?></button>
                     </td>
                 </tr>
             `).join('');
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error loading products</td></tr>`;
         }
     }
 
-    document.getElementById('btnAddUser').addEventListener('click', () => {
-        document.getElementById('addUserForm').reset();
-        document.getElementById('addUserOverlay').style.display = 'flex';
+    /* ============ LOAD CUSTOMERS FOR DROPDOWN (Quick Add-এর পর Refresh করতে) ============ */
+    async function loadCustomersDropdown(selectedId = null) {
+        try {
+            const res = await fetch('api/customer/list.php');
+            const result = await res.json();
+            if (result.status === 'success') {
+                customersCache = result.data;
+                const select = document.getElementById('sellCustomerSelect');
+                select.innerHTML = '<option value="">-- Walk-in Customer --</option>' +
+                    customersCache.map(c => `<option value="${c.id}" ${selectedId == c.id ? 'selected' : ''}>${c.name} - ${c.mobile}</option>`).join('');
+            }
+        } catch (err) { /* silent */ }
+    }
+
+    window.openSellModal = function (productId) {
+        const product = productsCache.find(p => p.id === productId);
+        if (!product) return;
+
+        document.getElementById('sellProductId').value = product.id;
+        document.getElementById('sellProductCostPrice').value = product.purchase_price;
+        document.getElementById('sellProductName').textContent = product.name;
+        document.getElementById('sellAvailableStock').textContent = product.stock;
+        document.getElementById('sellQuantityInput').value = 1;
+        document.getElementById('sellQuantityInput').max = product.stock;
+        document.getElementById('sellPriceInput').value = product.sale_price;
+        document.getElementById('sellDiscountInput').value = 0;
+        document.getElementById('sellPaidAmountInput').value = '';
+        document.getElementById('sellDueDisplay').textContent = '৳0.00';
+        document.getElementById('sellDiscountWarning').style.display = 'none';
+
+        const customerSelect = document.getElementById('sellCustomerSelect');
+        customerSelect.innerHTML = '<option value="">-- Walk-in Customer --</option>' +
+            customersCache.map(c => `<option value="${c.id}">${c.name} - ${c.mobile}</option>`).join('');
+
+        recalcSellTotal();
+        document.getElementById('sellProductOverlay').style.display = 'flex';
+    };
+
+    /* ============ CALCULATION: Gross, Max Discount (Loss Protection), Total, Due ============ */
+    function recalcSellTotal() {
+        const price = parseFloat(document.getElementById('sellPriceInput').value) || 0;
+        const qty = parseFloat(document.getElementById('sellQuantityInput').value) || 0;
+        const costPrice = parseFloat(document.getElementById('sellProductCostPrice').value) || 0;
+
+        const gross = price * qty;
+        const totalCost = costPrice * qty;
+        const maxDiscount = Math.max(gross - totalCost, 0);
+
+        document.getElementById('sellGrossDisplay').textContent = money(gross);
+        document.getElementById('sellMaxDiscountText').textContent = money(maxDiscount);
+
+        let discount = parseFloat(document.getElementById('sellDiscountInput').value) || 0;
+        const warningEl = document.getElementById('sellDiscountWarning');
+
+        if (discount > maxDiscount) {
+            discount = maxDiscount;
+            document.getElementById('sellDiscountInput').value = maxDiscount.toFixed(2);
+            warningEl.style.display = 'block';
+            setTimeout(() => { warningEl.style.display = 'none'; }, 2500);
+        }
+
+        const total = gross - discount;
+        document.getElementById('sellTotalDisplay').textContent = money(total);
+        recalcSellDue();
+    }
+
+    function recalcSellDue() {
+        const price = parseFloat(document.getElementById('sellPriceInput').value) || 0;
+        const qty = parseFloat(document.getElementById('sellQuantityInput').value) || 0;
+        const discount = parseFloat(document.getElementById('sellDiscountInput').value) || 0;
+        const total = (price * qty) - discount;
+        let paid = parseFloat(document.getElementById('sellPaidAmountInput').value) || 0;
+
+        if (paid > total) {
+            paid = total;
+            document.getElementById('sellPaidAmountInput').value = total.toFixed(2);
+        }
+        document.getElementById('sellDueDisplay').textContent = money(total - paid);
+    }
+
+    document.getElementById('sellPriceInput').addEventListener('input', recalcSellTotal);
+    document.getElementById('sellQuantityInput').addEventListener('input', recalcSellTotal);
+    document.getElementById('sellDiscountInput').addEventListener('input', recalcSellTotal);
+    document.getElementById('sellPaidAmountInput').addEventListener('input', recalcSellDue);
+
+    document.querySelectorAll('#sellProductOverlay [data-close], #sellProductOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('sellProductOverlay').style.display = 'none');
     });
 
-    document.getElementById('addUserForm').addEventListener('submit', async function (e) {
+    /* ============ QUICK ADD CUSTOMER ============ */
+    document.getElementById('btnQuickAddCustomer').addEventListener('click', () => {
+        document.getElementById('quickCustomerForm').reset();
+        document.getElementById('quickCustomerOverlay').style.display = 'flex';
+    });
+
+    document.querySelectorAll('#quickCustomerOverlay [data-close], #quickCustomerOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('quickCustomerOverlay').style.display = 'none');
+    });
+
+    document.getElementById('quickCustomerForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const payload = {
-            full_name: document.getElementById('userFullName').value.trim(),
-            username: document.getElementById('userUsername').value.trim(),
-            password: document.getElementById('userPassword').value.trim()
+            name: document.getElementById('qcName').value.trim(),
+            mobile: document.getElementById('qcMobile').value.trim(),
+            address: document.getElementById('qcAddress').value.trim()
         };
         try {
-            const res = await fetch('api/users/add.php', {
+            const res = await fetch('api/customer/add.php', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
             if (result.status === 'success') {
                 ckToast('success', result.message);
-                document.getElementById('addUserOverlay').style.display = 'none';
-                loadUsers();
+                document.getElementById('quickCustomerOverlay').style.display = 'none';
+                await loadCustomersDropdown(result.data.id);
             } else {
                 ckToast('error', result.message);
             }
         } catch (err) {
-            ckToast('error', 'Failed to add user');
+            ckToast('error', 'Failed to add customer');
         }
     });
 
-    window.openEditUser = function (u) {
-        document.getElementById('editUserId').value = u.id;
-        document.getElementById('editUserFullName').value = u.full_name;
-        document.getElementById('editUserUsername').value = u.username;
-        document.getElementById('editUserPassword').value = '';
-        document.getElementById('editUserOverlay').style.display = 'flex';
-    };
-
-    document.getElementById('editUserForm').addEventListener('submit', async function (e) {
+    /* ============ SUBMIT SALE ============ */
+    document.getElementById('sellProductForm').addEventListener('submit', async function (e) {
         e.preventDefault();
+
+        const customerId = document.getElementById('sellCustomerSelect').value;
+
         const payload = {
-            id: document.getElementById('editUserId').value,
-            full_name: document.getElementById('editUserFullName').value.trim(),
-            username: document.getElementById('editUserUsername').value.trim(),
-            password: document.getElementById('editUserPassword').value.trim()
+            product_id: document.getElementById('sellProductId').value,
+            customer_id: customerId,
+            quantity: document.getElementById('sellQuantityInput').value,
+            sale_price: document.getElementById('sellPriceInput').value,
+            discount_amount: document.getElementById('sellDiscountInput').value || 0,
+            paid_amount: document.getElementById('sellPaidAmountInput').value || 0
         };
+
+        const saveBtn = document.getElementById('sellSaveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
         try {
-            const res = await fetch('api/users/update.php', {
+            const res = await fetch('api/sales/add.php', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
+
             if (result.status === 'success') {
                 ckToast('success', result.message);
-                document.getElementById('editUserOverlay').style.display = 'none';
-                loadUsers();
-                if (parseInt(payload.id) === currentSessionUserId) {
-                    const topAvatar = document.querySelector('.profile-avatar');
-                    const topName = document.querySelector('.profile-name');
-                    if (topAvatar) topAvatar.textContent = payload.full_name.charAt(0).toUpperCase();
-                    if (topName) topName.textContent = payload.full_name;
-                }
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) {
-            ckToast('error', 'Failed to update user');
-        }
-    });
-
-    window.deleteUser = async function (id) {
-        const confirmResult = await ckConfirm('This user will no longer be able to log in.');
-        if (!confirmResult.isConfirmed) return;
-        try {
-            const res = await fetch('api/users/delete.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
-            });
-            const result = await res.json();
-            if (result.status === 'success') { ckToast('success', result.message); loadUsers(); }
-            else { ckToast('error', result.message); }
-        } catch (err) { ckToast('error', 'Failed to delete user'); }
-    };
-
-    /* ============ LANGUAGE SWITCH ============ */
-    document.querySelectorAll('.lang-option').forEach(opt => {
-        opt.addEventListener('click', async function () {
-            const lang = this.dataset.lang;
-            if (this.classList.contains('active')) return;
-            try {
-                const res = await fetch('api/settings/language.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: lang })
-                });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    ckToast('success', result.message);
-                    setTimeout(() => window.location.href = 'index.php#settings', 500);
-                } else {
-                    ckToast('error', result.message);
-                }
-            } catch (err) {
-                ckToast('error', 'Failed to change language');
-            }
-        });
-    });
-
-    /* ============ CUSTOMERS LIST ============ */
-    async function loadCustomers(search = '') {
-        const tbody = document.getElementById('customerTableBody');
-        try {
-            const res = await fetch('api/customer/list.php?search=' + encodeURIComponent(search));
-            const result = await res.json();
-            if (result.status !== 'success' || result.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
-                return;
-            }
-            tbody.innerHTML = result.data.map(c => `
-                <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${c.name}</td>
-                    <td data-label="<?php echo lang('mobile'); ?>">${c.mobile}</td>
-                    <td data-label="<?php echo lang('customer_due'); ?>" style="font-weight:600;color:${c.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(c.due)}</td>
-                    <td data-label="<?php echo lang('action'); ?>">
-                        <div class="d-flex gap-2 justify-content-end">
-                            ${c.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openCustomerPayment(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.due})"><i class="fa-solid fa-hand-holding-dollar"></i> <?php echo lang('receive_payment'); ?></button>` : ''}
-                            <button class="icon-btn ck-btn-danger-soft" onclick="deleteCustomer(${c.id})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error</td></tr>`;
-        }
-    }
-
-    window.openCustomerPayment = function (id, name, due) {
-        document.getElementById('paymentCustomerId').value = id;
-        document.getElementById('paymentCustomerName').textContent = name;
-        document.getElementById('paymentCustomerDue').textContent = money(due);
-        document.getElementById('customerPaymentAmount').value = '';
-        document.getElementById('customerPaymentAmount').max = due;
-        document.getElementById('customerPaymentOverlay').style.display = 'flex';
-    };
-
-    document.getElementById('customerPaymentForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-            customer_id: document.getElementById('paymentCustomerId').value,
-            amount: document.getElementById('customerPaymentAmount').value
-        };
-        try {
-            const res = await fetch('api/customer/payment.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.getElementById('customerPaymentOverlay').style.display = 'none';
+                document.getElementById('sellProductOverlay').style.display = 'none';
                 updateCashBalance(result.cash_balance);
-                loadCustomers();
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) { ckToast('error', 'Failed to process payment'); }
-    });
-
-    window.deleteCustomer = async function (id) {
-        const confirmResult = await ckConfirm('This customer will be permanently deleted.');
-        if (!confirmResult.isConfirmed) return;
-        try {
-            const res = await fetch('api/customer/delete.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
-            });
-            const result = await res.json();
-            if (result.status === 'success') { ckToast('success', result.message); loadCustomers(); }
-            else { ckToast('error', result.message); }
-        } catch (err) { ckToast('error', 'Failed to delete customer'); }
-    };
-
-    /* ============ SUPPLIERS LIST ============ */
-    async function loadSuppliers(search = '') {
-        const tbody = document.getElementById('supplierTableBody');
-        try {
-            const res = await fetch('api/supplier/list.php?search=' + encodeURIComponent(search));
-            const result = await res.json();
-            if (result.status !== 'success' || result.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
-                return;
-            }
-            tbody.innerHTML = result.data.map(s => `
-                <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${s.name}</td>
-                    <td data-label="<?php echo lang('mobile'); ?>">${s.mobile}</td>
-                    <td data-label="<?php echo lang('supplier_due'); ?>" style="font-weight:600;color:${s.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(s.due)}</td>
-                    <td data-label="<?php echo lang('action'); ?>">
-                        <div class="d-flex gap-2 justify-content-end">
-                            ${s.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openSupplierPayment(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.due})"><i class="fa-solid fa-money-bill-transfer"></i> <?php echo lang('make_payment'); ?></button>` : ''}
-                            <button class="icon-btn ck-btn-danger-soft" onclick="deleteSupplier(${s.id})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error</td></tr>`;
-        }
-    }
-
-    window.openSupplierPayment = function (id, name, due) {
-        document.getElementById('paymentSupplierId').value = id;
-        document.getElementById('paymentSupplierName').textContent = name;
-        document.getElementById('paymentSupplierDue').textContent = money(due);
-        document.getElementById('supplierPaymentAmount').value = '';
-        document.getElementById('supplierPaymentAmount').max = due;
-        document.getElementById('supplierPaymentOverlay').style.display = 'flex';
-    };
-
-    document.getElementById('supplierPaymentForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-            supplier_id: document.getElementById('paymentSupplierId').value,
-            amount: document.getElementById('supplierPaymentAmount').value
-        };
-        try {
-            const res = await fetch('api/supplier/payment.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.getElementById('supplierPaymentOverlay').style.display = 'none';
-                updateCashBalance(result.cash_balance);
-                loadSuppliers();
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) { ckToast('error', 'Failed to process payment'); }
-    });
-
-    window.deleteSupplier = async function (id) {
-        const confirmResult = await ckConfirm('This supplier will be permanently deleted.');
-        if (!confirmResult.isConfirmed) return;
-        try {
-            const res = await fetch('api/supplier/delete.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
-            });
-            const result = await res.json();
-            if (result.status === 'success') { ckToast('success', result.message); loadSuppliers(); }
-            else { ckToast('error', result.message); }
-        } catch (err) { ckToast('error', 'Failed to delete supplier'); }
-    };
-
-    /* ============ DATA: BACKUP ============ */
-    document.getElementById('btnDownloadBackup').addEventListener('click', () => {
-        window.location.href = 'api/settings/backup.php';
-    });
-
-    /* ============ DATA: IMPORT ============ */
-    document.getElementById('btnImportData').addEventListener('click', () => {
-        document.getElementById('importFileInput').click();
-    });
-
-    document.getElementById('importFileInput').addEventListener('change', async function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const confirmResult = await ckConfirm('This will replace ALL current data with the uploaded backup file.');
-        if (!confirmResult.isConfirmed) { this.value = ''; return; }
-
-        try {
-            const text = await file.text();
-            const jsonData = JSON.parse(text);
-
-            const res = await fetch('api/settings/import.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(jsonData)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                if (result.force_logout) {
-                    setTimeout(() => window.location.href = 'login.php', 1500);
-                } else {
-                    setTimeout(() => window.location.href = 'index.php#settings', 1200);
-                }
+                loadProductTable(document.getElementById('salesSearch').value);
+                if (historyMode) loadSalesHistory();
             } else {
                 ckToast('error', result.message);
             }
         } catch (err) {
-            ckToast('error', 'Invalid backup file');
+            ckToast('error', 'Failed to process sale');
         } finally {
-            this.value = '';
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<?php echo lang('sell'); ?>';
         }
     });
 
-    /* ============ DATA: DELETE ALL ============ */
-    document.getElementById('btnOpenDeleteAll').addEventListener('click', () => {
-        document.getElementById('deleteAllForm').reset();
-        document.getElementById('deleteAllOverlay').style.display = 'flex';
+    /* ============ SALES HISTORY ============ */
+    async function loadSalesHistory(search = '') {
+        const tbody = document.getElementById('salesTableBody');
+        try {
+            const res = await fetch('api/sales/list.php?search=' + encodeURIComponent(search));
+            const result = await res.json();
+
+            if (result.status !== 'success' || result.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = result.data.map(s => {
+                let statusHtml;
+                if (s.due_amount > 0 && s.paid_amount > 0) {
+                    statusHtml = `<span class="badge-due">Partial</span><div style="font-size:10px;color:var(--danger);margin-top:2px;">Due: ${money(s.due_amount)}</div>`;
+                } else if (s.due_amount > 0) {
+                    statusHtml = `<span class="badge-due"><?php echo lang('due'); ?></span><div style="font-size:10px;color:var(--danger);margin-top:2px;">Due: ${money(s.due_amount)}</div>`;
+                } else {
+                    statusHtml = `<span class="badge-cash">Paid</span>`;
+                }
+
+                return `
+                <tr>
+                    <td data-label="<?php echo lang('product_name'); ?>" style="font-weight:500;">${s.product_name}</td>
+                    <td data-label="<?php echo lang('customer'); ?>">${s.customer_name ? s.customer_name : '<span class="text-muted">Walk-in</span>'}</td>
+                    <td data-label="<?php echo lang('quantity'); ?>">${s.quantity}</td>
+                    <td data-label="<?php echo lang('sale_price'); ?>">${money(s.sale_price)}</td>
+                    <td data-label="<?php echo lang('total_amount'); ?>" style="font-weight:600;">${money(s.total_amount)}${s.discount_amount > 0 ? `<div style="font-size:10px;color:var(--warning);margin-top:2px;">Discount: ${money(s.discount_amount)}</div>` : ''}</td>
+                    <td data-label="Status">${statusHtml}</td>
+                    <td data-label="<?php echo lang('date'); ?>">${formatDate(s.created_at)}</td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <div class="d-flex gap-2 justify-content-end">
+                            ${s.due_amount > 0 ? `<button class="ck-btn ck-btn-success-soft" style="padding:6px 10px;font-size:11px;" onclick='openSalesPayDue(${JSON.stringify(s)})'><i class="fa-solid fa-hand-holding-dollar"></i> Pay</button>` : ''}
+                            <button class="ck-btn ck-btn-outline" style="padding:6px 10px;font-size:11px;" onclick='openReturnModal(${JSON.stringify(s)})'><i class="fa-solid fa-rotate-left"></i> Return</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Error loading data</td></tr>`;
+        }
+    }
+
+    /* ============ PAY SALE DUE ============ */
+    window.openSalesPayDue = function (s) {
+        document.getElementById('salesPayDueSaleId').value = s.id;
+        document.getElementById('salesPayDueProductName').textContent = s.product_name;
+        document.getElementById('salesPayDueCustomerName').textContent = s.customer_name ? s.customer_name : 'Walk-in';
+        document.getElementById('salesPayDueAmountText').textContent = money(s.due_amount);
+        document.getElementById('salesPayDueAmountInput').value = '';
+        document.getElementById('salesPayDueAmountInput').max = s.due_amount;
+        document.getElementById('salesPayDueOverlay').style.display = 'flex';
+    };
+
+    document.getElementById('salesPayDueForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('salesPayDueSaleId').value,
+            amount: document.getElementById('salesPayDueAmountInput').value
+        };
+        try {
+            const res = await fetch('api/sales/pay_due.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('salesPayDueOverlay').style.display = 'none';
+                updateCashBalance(result.cash_balance);
+                loadSalesHistory(document.getElementById('salesSearch').value);
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) {
+            ckToast('error', 'Failed to pay due');
+        }
     });
 
-    document.getElementById('deleteAllForm').addEventListener('submit', async function (e) {
+    document.querySelectorAll('#salesPayDueOverlay [data-close], #salesPayDueOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('salesPayDueOverlay').style.display = 'none');
+    });
+
+    /* ============ RETURN MODAL ============ */
+    window.openReturnModal = function (s) {
+        document.getElementById('returnSaleId').value = s.id;
+        document.getElementById('returnProductName').textContent = s.product_name;
+        document.getElementById('returnSoldQty').textContent = s.quantity;
+        document.getElementById('returnQtyInput').value = s.quantity;
+        document.getElementById('returnQtyInput').max = s.quantity;
+
+        returnUnitPrice = parseFloat(s.sale_price);
+        returnMaxQty = s.quantity;
+
+        recalcReturnAmount();
+        document.getElementById('returnOverlay').style.display = 'flex';
+    };
+
+    function recalcReturnAmount() {
+        let qty = parseInt(document.getElementById('returnQtyInput').value) || 0;
+        if (qty > returnMaxQty) {
+            qty = returnMaxQty;
+            document.getElementById('returnQtyInput').value = qty;
+        }
+        document.getElementById('returnAmountDisplay').textContent = money(qty * returnUnitPrice);
+    }
+    document.getElementById('returnQtyInput').addEventListener('input', recalcReturnAmount);
+
+    document.getElementById('returnForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-
-        const confirmResult = await ckConfirm('This action cannot be undone. Are you completely sure?');
-        if (!confirmResult.isConfirmed) return;
-
         const payload = {
-            password1: document.getElementById('deletePassword1').value,
-            password2: document.getElementById('deletePassword2').value
+            id: document.getElementById('returnSaleId').value,
+            return_qty: document.getElementById('returnQtyInput').value
         };
 
-        const btn = document.getElementById('deleteAllSaveBtn');
+        const btn = document.getElementById('returnSaveBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
         try {
-            const res = await fetch('api/settings/delete_all.php', {
+            const res = await fetch('api/sales/return.php', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             const result = await res.json();
 
             if (result.status === 'success') {
                 ckToast('success', result.message);
-                document.getElementById('deleteAllOverlay').style.display = 'none';
-                setTimeout(() => window.location.href = 'index.php#dashboard', 1000);
+                document.getElementById('returnOverlay').style.display = 'none';
+                updateCashBalance(result.cash_balance);
+                loadSalesHistory();
+                loadProductTable();
             } else {
                 ckToast('error', result.message);
             }
         } catch (err) {
-            ckToast('error', 'Failed to delete data');
+            ckToast('error', 'Failed to process return');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<?php echo lang('delete_permanently'); ?>';
+            btn.innerHTML = 'Confirm Return';
         }
     });
 
-    /* ============ CLOSE MODALS ============ */
-    document.querySelectorAll('[data-close], .ck-modal-close').forEach(el => {
-        el.addEventListener('click', function () {
-            const target = this.dataset.close;
-            if (target) document.getElementById(target).style.display = 'none';
-        });
+    document.querySelectorAll('#returnOverlay [data-close], #returnOverlay .ck-modal-close').forEach(el => {
+        el.addEventListener('click', () => document.getElementById('returnOverlay').style.display = 'none');
     });
 
-    document.querySelectorAll('.ck-modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) overlay.style.display = 'none';
-        });
+    document.getElementById('btnToggleHistory').addEventListener('click', function () {
+        historyMode = !historyMode;
+        document.getElementById('productGridView').style.display = historyMode ? 'none' : 'flex';
+        document.getElementById('salesHistoryView').style.display = historyMode ? 'flex' : 'none';
+        document.getElementById('toggleHistoryText').textContent = historyMode ? 'View Products' : 'View History';
+        this.querySelector('i').className = historyMode ? 'fa-solid fa-box' : 'fa-solid fa-clock-rotate-left';
+        if (historyMode) loadSalesHistory();
     });
 
-    /* ============ SEARCH ============ */
-    let custTimer;
-    document.getElementById('customerSearchInput').addEventListener('input', function () {
-        clearTimeout(custTimer);
+    let searchTimer;
+    document.getElementById('salesSearch').addEventListener('input', function () {
+        clearTimeout(searchTimer);
         const val = this.value;
-        custTimer = setTimeout(() => loadCustomers(val), 350);
+        searchTimer = setTimeout(() => {
+            if (historyMode) loadSalesHistory(val);
+            else loadProductTable(val);
+        }, 350);
     });
 
-    let suppTimer;
-    document.getElementById('supplierSearchInput').addEventListener('input', function () {
-        clearTimeout(suppTimer);
-        const val = this.value;
-        suppTimer = setTimeout(() => loadSuppliers(val), 350);
-    });
+    loadProductTable();
 })();
 </script>

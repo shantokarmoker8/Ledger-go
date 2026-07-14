@@ -266,13 +266,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
         { key: 'total_expenses', label: '<?php echo lang('total_expenses'); ?>', icon: 'fa-receipt',       color: '#0891b2', bg: '#ecfeff', type: 'expenses' }
     ];
 
+    /* Settings এখন Popup-System, তাই এখানে সরাসরি Modal ID রাখা হয়েছে (Tab Name না) */
     const viewListMap = {
         purchase:     { page: 'purchase' },
         sales:        { page: 'sales' },
         profit:       { page: 'sales' },
         expenses:     { page: 'expenses' },
-        customer_due: { page: 'settings', tab: 'customers' },
-        supplier_due: { page: 'settings', tab: 'suppliers' }
+        customer_due: { page: 'settings', tab: 'customersModal' },
+        supplier_due: { page: 'settings', tab: 'suppliersModal' }
     };
 
     let dashboardChart = null;
@@ -291,11 +292,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return Math.floor(diff / 86400) + 'd ago';
     }
 
-    function goToSettingsTab(tab) {
+    /* Settings এখন Popup-System, তাই Page Load করার পর সরাসরি সেই Modal Open করা হয় */
+    function goToSettingsModal(modalId) {
         loadPage('settings').then(() => {
             setTimeout(() => {
-                const tabBtn = document.querySelector('.settings-tab[data-tab="' + tab + '"]');
-                if (tabBtn) tabBtn.click();
+                if (window.openSettingsModal) window.openSettingsModal(modalId);
             }, 300);
         });
     }
@@ -397,11 +398,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
     document.getElementById('btnGoCustomerList').addEventListener('click', () => {
         document.getElementById('addCustomerOverlay').style.display = 'none';
-        goToSettingsTab('customers');
+        goToSettingsModal('customersModal');
     });
     document.getElementById('btnGoSupplierList').addEventListener('click', () => {
         document.getElementById('addSupplierOverlay').style.display = 'none';
-        goToSettingsTab('suppliers');
+        goToSettingsModal('suppliersModal');
     });
 
     document.getElementById('addCustomerForm').addEventListener('submit', async function (e) {
@@ -463,7 +464,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
         const target = viewListMap[type];
         document.getElementById('chartViewListText').textContent = target.tab
-            ? ('View ' + target.tab.charAt(0).toUpperCase() + target.tab.slice(1) + ' List')
+            ? 'View List'
             : 'View List';
 
         await renderChart(type, 7);
@@ -473,7 +474,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
         document.getElementById('chartOverlay').style.display = 'none';
         const target = viewListMap[currentChartType];
         if (target.tab) {
-            goToSettingsTab(target.tab);
+            goToSettingsModal(target.tab);
         } else {
             loadPage(target.page);
         }

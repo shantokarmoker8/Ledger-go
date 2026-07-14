@@ -2,11 +2,10 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 $settings = $pdo->query("SELECT * FROM settings LIMIT 1")->fetch();
-$currentLang = $_SESSION['language'] ?? 'en';
 ?>
 <div id="settingsPage">
 
-    <!-- ============ HEADER: Desktop বামে, Mobile ডানে ============ -->
+    <!-- ============ HEADER: Desktop বামে, Mobile মাঝখানে ============ -->
     <div class="settings-header">
         <h4><?php echo lang('settings'); ?></h4>
         <p><?php echo lang('settings_subtitle'); ?></p>
@@ -18,10 +17,8 @@ $currentLang = $_SESSION['language'] ?? 'en';
         <button class="settings-tab" data-modal="businessModal"><i class="fa-solid fa-store"></i> <?php echo lang('business_info'); ?></button>
         <button class="settings-tab" data-modal="cashModal"><i class="fa-solid fa-sack-dollar"></i> <?php echo lang('cash_balance'); ?></button>
         <button class="settings-tab" data-modal="usersModal"><i class="fa-solid fa-user-group"></i> <?php echo lang('users'); ?></button>
-        <button class="settings-tab" data-modal="languageModal"><i class="fa-solid fa-language"></i> <?php echo lang('language'); ?></button>
         <button class="settings-tab" data-modal="customersModal"><i class="fa-solid fa-users"></i> <?php echo lang('customer'); ?></button>
         <button class="settings-tab" data-modal="suppliersModal"><i class="fa-solid fa-truck"></i> <?php echo lang('supplier'); ?></button>
-        <button class="settings-tab" data-modal="dataModal"><i class="fa-solid fa-database"></i> <?php echo lang('data_backup'); ?></button>
     </div>
 </div>
 
@@ -45,7 +42,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
             <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
             <input type="text" class="ck-input" id="myUsername" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
 
-            <label class="ck-label mt-2"><?php echo lang('password'); ?> <span class="text-muted">(<?php echo lang('leave_blank_password'); ?>)</span></label>
+            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
             <input type="text" class="ck-input" id="myPassword" placeholder="<?php echo lang('leave_blank_password'); ?>">
 
             <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="myAccountSaveBtn">
@@ -80,31 +77,31 @@ $currentLang = $_SESSION['language'] ?? 'en';
     </div>
 </div>
 
-<!-- ============ MODAL: CASH BALANCE (বড় Modal, Table সহ) ============ -->
+<!-- ============ MODAL: CASH BALANCE (Table Design Fix সহ) ============ -->
 <div class="ck-modal-overlay" id="cashModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:800px;">
+    <div class="ck-modal-box cash-modal-box" style="max-width:820px;">
         <div class="ck-modal-header">
             <h5><?php echo lang('cash_balance'); ?></h5>
             <i class="fa-solid fa-xmark ck-modal-close" data-close="cashModal"></i>
         </div>
 
-        <div class="row g-3">
-            <div class="col-lg-5">
-                <div class="ck-card mb-3">
+        <div class="cash-modal-flex">
+
+            <div class="cash-modal-left">
+                <div class="ck-card mb-2" style="padding:14px;">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width:44px;height:44px;background:#eff6ff;color:#2563eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+                        <div style="width:40px;height:40px;background:#eff6ff;color:#2563eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">
                             <i class="fa-solid fa-sack-dollar"></i>
                         </div>
                         <div>
-                            <div class="text-muted" style="font-size:12px;"><?php echo lang('cash_balance'); ?></div>
-                            <div id="currentCashDisplay" style="font-weight:700;font-size:19px;color:var(--primary-blue);"></div>
+                            <div class="text-muted" style="font-size:11px;"><?php echo lang('cash_balance'); ?></div>
+                            <div id="currentCashDisplay" style="font-weight:700;font-size:17px;color:var(--primary-blue);"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="ck-card">
-                    <p class="text-muted mb-3" style="font-size:12px;"><?php echo lang('cash_subtitle'); ?></p>
-                    <div class="ck-toggle-tabs mb-3">
+                <div class="ck-card" style="padding:14px;">
+                    <div class="ck-toggle-tabs mb-2">
                         <button type="button" class="ck-toggle-btn active" data-cashmode="add"><i class="fa-solid fa-plus"></i> <?php echo lang('add_cash'); ?></button>
                         <button type="button" class="ck-toggle-btn" data-cashmode="withdraw"><i class="fa-solid fa-minus"></i> <?php echo lang('withdraw_cash'); ?></button>
                     </div>
@@ -113,23 +110,24 @@ $currentLang = $_SESSION['language'] ?? 'en';
                         <label class="ck-label"><?php echo lang('amount'); ?></label>
                         <input type="number" step="0.01" min="0.01" class="ck-input" id="cashAmountInput" placeholder="e.g. 5000" required>
 
-                        <label class="ck-label mt-2"><?php echo lang('note'); ?> <span class="text-muted">(optional)</span></label>
+                        <label class="ck-label mt-2"><?php echo lang('note'); ?></label>
                         <input type="text" class="ck-input" id="cashNoteInput">
 
-                        <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-3" id="cashTransactionSaveBtn">
+                        <button type="submit" class="ck-btn ck-btn-primary w-100 justify-content-center mt-2" id="cashTransactionSaveBtn">
                             <i class="fa-solid fa-check"></i> <span id="cashTransactionBtnText"><?php echo lang('add_cash'); ?></span>
                         </button>
                     </form>
                 </div>
             </div>
 
-            <div class="col-lg-7">
-                <div class="ck-card p-0">
-                    <div class="p-3 pb-0">
-                        <h6 style="font-weight:600;margin-bottom:0;"><?php echo lang('transaction_history'); ?></h6>
+            <div class="cash-modal-right">
+                <div class="ck-card p-0 cash-history-card">
+                    <div class="p-2 pb-1" style="flex-shrink:0;">
+                        <h6 style="font-weight:600;margin-bottom:0;font-size:13px;"><?php echo lang('transaction_history'); ?></h6>
                     </div>
-                    <div class="table-responsive" style="max-height:340px;overflow-y:auto;">
-                        <table class="ck-table">
+                    <!-- ============ Table Design Fix: Min-Width + নিজস্ব Horizontal Scroll ============ -->
+                    <div class="cash-history-scroll-x">
+                        <table class="ck-table cash-history-table">
                             <thead>
                                 <tr>
                                     <th><?php echo lang('type'); ?></th>
@@ -146,6 +144,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -158,13 +157,13 @@ $currentLang = $_SESSION['language'] ?? 'en';
             <i class="fa-solid fa-xmark ck-modal-close" data-close="usersModal"></i>
         </div>
         <div class="settings-inner-head">
-            <p class="text-muted mb-0" style="font-size:13px;"><?php echo lang('users_subtitle'); ?></p>
+            <p class="text-muted mb-0" style="font-size:12px;"><?php echo lang('users_subtitle'); ?></p>
             <button class="ck-btn ck-btn-primary" id="btnAddUser">
                 <i class="fa-solid fa-user-plus"></i> <?php echo lang('add_customer'); ?>
             </button>
         </div>
         <div class="ck-card p-0">
-            <div class="table-responsive" style="max-height:360px;overflow-y:auto;">
+            <div class="fixed-scroll-area">
                 <table class="ck-table">
                     <thead>
                         <tr>
@@ -178,33 +177,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
                         <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MODAL: LANGUAGE ============ -->
-<div class="ck-modal-overlay" id="languageModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:420px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('language'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="languageModal"></i>
-        </div>
-        <p class="text-muted mb-3" style="font-size:13px;"><?php echo lang('language_subtitle'); ?></p>
-        <div class="row g-3">
-            <div class="col-6">
-                <div class="lang-option <?php echo $currentLang === 'en' ? 'active' : ''; ?>" data-lang="en">
-                    <i class="fa-solid fa-check lang-check"></i>
-                    <div style="font-size:22px;">🇬🇧</div>
-                    <div style="font-weight:600;margin-top:8px;">English</div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="lang-option <?php echo $currentLang === 'bn' ? 'active' : ''; ?>" data-lang="bn">
-                    <i class="fa-solid fa-check lang-check"></i>
-                    <div style="font-size:22px;">🇧🇩</div>
-                    <div style="font-weight:600;margin-top:8px;">বাংলা</div>
-                </div>
             </div>
         </div>
     </div>
@@ -224,7 +196,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
             </div>
         </div>
         <div class="ck-card p-0">
-            <div class="table-responsive" style="max-height:360px;overflow-y:auto;">
+            <div class="fixed-scroll-area">
                 <table class="ck-table">
                     <thead>
                         <tr>
@@ -257,7 +229,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
             </div>
         </div>
         <div class="ck-card p-0">
-            <div class="table-responsive" style="max-height:360px;overflow-y:auto;">
+            <div class="fixed-scroll-area">
                 <table class="ck-table">
                     <thead>
                         <tr>
@@ -276,54 +248,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
     </div>
 </div>
 
-<!-- ============ MODAL: DATA (BACKUP / IMPORT / DELETE) ============ -->
-<div class="ck-modal-overlay" id="dataModal" style="display:none;">
-    <div class="ck-modal-box" style="max-width:720px;">
-        <div class="ck-modal-header">
-            <h5><?php echo lang('data_backup'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="dataModal"></i>
-        </div>
-        <p class="text-muted mb-3 text-center" style="font-size:13px;"><?php echo lang('data_subtitle'); ?></p>
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-cloud-arrow-down"></i></div>
-                    <h6 style="font-weight:600;margin:12px 0 6px;"><?php echo lang('backup_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:12px;">সমস্ত তথ্য একটি JSON ফাইল হিসেবে ডাউনলোড করুন।</p>
-                    <button class="ck-btn ck-btn-primary w-100 justify-content-center" id="btnDownloadBackup">
-                        <i class="fa-solid fa-download"></i> <?php echo lang('download_backup'); ?>
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                    <h6 style="font-weight:600;margin:12px 0 6px;"><?php echo lang('import_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:12px;"><?php echo lang('select_backup_file'); ?></p>
-                    <input type="file" accept=".json,application/json" id="importFileInput" style="display:none;">
-                    <button class="ck-btn ck-btn-success-soft w-100 justify-content-center" id="btnImportData">
-                        <i class="fa-solid fa-upload"></i> <?php echo lang('upload_backup'); ?>
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="ck-card text-center h-100 data-action-card">
-                    <div class="data-icon-box" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-trash-can"></i></div>
-                    <h6 style="font-weight:600;margin:12px 0 6px;"><?php echo lang('delete_all_data'); ?></h6>
-                    <p class="text-muted mb-3" style="font-size:12px;"><?php echo lang('delete_warning'); ?></p>
-                    <button class="ck-btn ck-btn-danger-soft w-100 justify-content-center" id="btnOpenDeleteAll">
-                        <i class="fa-solid fa-triangle-exclamation"></i> <?php echo lang('delete_all_data'); ?>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ SUB-MODAL: ADD USER (Users Modal-এর উপরে খুলবে) ============ -->
+<!-- ============ SUB-MODAL: ADD USER ============ -->
 <div class="ck-modal-overlay" id="addUserOverlay" style="display:none;z-index:2100;">
     <div class="ck-modal-box" style="max-width:400px;">
         <div class="ck-modal-header">
@@ -364,8 +289,8 @@ $currentLang = $_SESSION['language'] ?? 'en';
             <label class="ck-label mt-2"><?php echo lang('username'); ?></label>
             <input type="text" class="ck-input" id="editUserUsername" required>
 
-            <label class="ck-label mt-2"><?php echo lang('password'); ?> <span class="text-muted">(<?php echo lang('leave_blank_password'); ?>)</span></label>
-            <input type="text" class="ck-input" id="editUserPassword">
+            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
+            <input type="text" class="ck-input" id="editUserPassword" placeholder="<?php echo lang('leave_blank_password'); ?>">
 
             <div class="d-flex gap-2 mt-3">
                 <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="editUserOverlay"><?php echo lang('cancel'); ?></button>
@@ -421,59 +346,20 @@ $currentLang = $_SESSION['language'] ?? 'en';
     </div>
 </div>
 
-<!-- ============ SUB-MODAL: DELETE ALL DATA (Double Password) ============ -->
-<div class="ck-modal-overlay" id="deleteAllOverlay" style="display:none;z-index:2100;">
-    <div class="ck-modal-box" style="max-width:400px;">
-        <div class="ck-modal-header">
-            <h5 style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> <?php echo lang('delete_all_data'); ?></h5>
-            <i class="fa-solid fa-xmark ck-modal-close" data-close="deleteAllOverlay"></i>
-        </div>
-        <p class="text-muted" style="font-size:12px;"><?php echo lang('delete_warning'); ?></p>
-        <form id="deleteAllForm">
-            <label class="ck-label mt-2"><?php echo lang('password'); ?></label>
-            <input type="password" class="ck-input" id="deletePassword1" required>
-
-            <label class="ck-label mt-2"><?php echo lang('confirm_password_again'); ?></label>
-            <input type="password" class="ck-input" id="deletePassword2" required>
-
-            <div class="d-flex gap-2 mt-3">
-                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="deleteAllOverlay"><?php echo lang('cancel'); ?></button>
-                <button type="submit" class="ck-btn ck-btn-danger-soft flex-fill justify-content-center" id="deleteAllSaveBtn"><?php echo lang('delete_permanently'); ?></button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
-    /* ============ HEADER: Desktop বামে, Mobile ডানে (নিশ্চিতভাবে) ============ */
-    .settings-header {
-        margin-bottom: 20px;
-        width: 100%;
-    }
+    /* ============ HEADER: Desktop বামে, Mobile মাঝখানে ============ */
+    .settings-header { margin-bottom: 20px; width: 100%; }
     .settings-header h4 { font-weight: 600; margin: 0 0 2px; }
     .settings-header p { color: var(--text-muted); font-size: 13px; margin: 0; }
-
-    .settings-header,
-    .settings-header h4,
-    .settings-header p {
-        text-align: left;
-    }
+    .settings-header, .settings-header h4, .settings-header p { text-align: left; }
 
     @media (max-width: 767px) {
-        .settings-header,
-        .settings-header h4,
-        .settings-header p {
-            text-align: right;
-        }
+        .settings-header, .settings-header h4, .settings-header p { text-align: center; }
     }
 
-    /* ============ Tabs: শুধু বাটন, কোনো Content নিচে দেখাবে না ============ */
-    .settings-tabs {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 12px;
-    }
+    /* ============ Tabs: শুধু বাটন ============ */
+    .settings-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
     .settings-tab {
         border: 1.5px solid var(--border-color); background: #fff; color: var(--text-dark);
         padding: 22px 16px; border-radius: 14px; font-size: 14px; font-weight: 600;
@@ -482,8 +368,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
     }
     .settings-tab i { font-size: 22px; color: var(--primary-blue); }
     .settings-tab:hover { border-color: var(--primary-blue); box-shadow: 0 4px 14px rgba(37,99,235,0.1); transform: translateY(-2px); }
-
-    /* Click করার সাথে সাথে Visual Press Effect */
     .settings-tab:active { transform: scale(0.94); }
 
     .settings-inner-head {
@@ -491,27 +375,54 @@ $currentLang = $_SESSION['language'] ?? 'en';
         flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
     }
 
-    .lang-option {
-        border: 1.5px solid var(--border-color); border-radius: 12px; padding: 20px;
-        text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease;
-    }
-    .lang-option:hover { border-color: var(--primary-blue); }
-    .lang-option.active { border-color: var(--primary-blue); background: var(--light-blue); }
-    .lang-option .lang-check {
-        position: absolute; top: 10px; right: 10px; color: var(--primary-blue);
-        font-size: 12px; opacity: 0; transition: opacity 0.2s ease;
-    }
-    .lang-option.active .lang-check { opacity: 1; }
-
-    .cash-type-badge-add { background: #f0fdf4; color: #16a34a; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-    .cash-type-badge-withdraw { background: #fef2f2; color: #dc2626; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
-
+    .cash-type-badge-add { background: #f0fdf4; color: #16a34a; font-size: 10px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+    .cash-type-badge-withdraw { background: #fef2f2; color: #dc2626; font-size: 10px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
     .user-you-badge { background: var(--light-blue); color: var(--primary-blue); font-size: 9px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
 
-    .data-action-card { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 24px 18px; }
-    .data-icon-box {
-        width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center;
-        justify-content: center; font-size: 21px;
+    /* ============ Scrollbar সম্পূর্ণ লুকানো (সব জায়গায়) ============ */
+    .ck-modal-box, .fixed-scroll-area, .cash-history-scroll-x, .cash-modal-left {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .ck-modal-box::-webkit-scrollbar,
+    .fixed-scroll-area::-webkit-scrollbar,
+    .cash-history-scroll-x::-webkit-scrollbar,
+    .cash-modal-left::-webkit-scrollbar {
+        display: none;
+    }
+
+    .fixed-scroll-area { max-height: 360px; overflow-y: auto; overflow-x: auto; }
+    .fixed-scroll-area table { min-width: 500px; }
+
+    /* ============ CASH MODAL LAYOUT ============ */
+    .cash-modal-box { display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; }
+    .cash-modal-flex { display: flex; gap: 14px; flex: 1; min-height: 0; }
+    .cash-modal-left { flex: 0 0 270px; overflow-y: auto; }
+    .cash-modal-right { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .cash-history-card { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ============ Table Design Fix: Column Squeeze/Gap সমস্যা সমাধান ============
+       আগের সমস্যা: Table-এর প্রস্থ Container-এর সমান বাধ্য হয়ে Column-গুলোর মধ্যে
+       অস্বাভাবিক ফাঁকা তৈরি হচ্ছিল। এখন Table-এ একটা Minimum Width বেঁধে
+       দেওয়া হয়েছে, ফলে Column-গুলো নিজেদের স্বাভাবিক আকারেই থাকবে; জায়গা কম
+       পড়লে শুধু এই ছোট Box-টুকু Horizontal Scroll হবে (Scrollbar লুকানো থাকবে)। */
+    .cash-history-scroll-x {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+    }
+    .cash-history-table {
+        min-width: 620px;
+    }
+    .cash-history-table th, .cash-history-table td {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 767px) {
+        .cash-modal-flex { flex-direction: column; }
+        .cash-modal-left { flex: 0 0 auto; overflow: visible; }
+        .cash-modal-right { flex: 1; min-height: 0; }
+        .cash-history-scroll-x { max-height: 34vh; }
     }
 
     @media (max-width: 480px) {
@@ -525,24 +436,25 @@ $currentLang = $_SESSION['language'] ?? 'en';
 <script>
 (function () {
     const currentSessionUserId = <?php echo (int) $_SESSION['user_id']; ?>;
-    const bnDigitMap = { '0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯' };
-
-    function toBn(str) {
-        return String(str).replace(/[0-9]/g, d => bnDigitMap[d]);
-    }
 
     function money(v) {
-        const formatted = '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        return CK.lang === 'bn' ? toBn(formatted) : formatted;
+        return '৳' + parseFloat(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function formatDate(dateStr) {
         const d = new Date(dateStr.replace(' ', 'T'));
-        const formatted = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        return CK.lang === 'bn' ? toBn(formatted) : formatted;
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
-    /* ============ TABS: ক্লিক করলে সংশ্লিষ্ট Modal Popup হবে ============ */
+    /* Global Fix: SweetAlert2 Confirm Popup সবসময় সবার উপরে দেখাবে */
+    if (!document.getElementById('ck-global-swal-fix')) {
+        const style = document.createElement('style');
+        style.id = 'ck-global-swal-fix';
+        style.textContent = `.swal2-container { z-index: 99999 !important; }`;
+        document.head.appendChild(style);
+    }
+
+    /* ============ TABS: ক্লিক করলে Modal Popup হবে ============ */
     document.querySelectorAll('.settings-tab').forEach(tab => {
         tab.addEventListener('click', function () {
             const modalId = this.dataset.modal;
@@ -696,11 +608,11 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
             tbody.innerHTML = result.data.map(t => `
                 <tr>
-                    <td data-label="<?php echo lang('type'); ?>"><span class="${t.type === 'add' ? 'cash-type-badge-add' : 'cash-type-badge-withdraw'}">${t.type === 'add' ? '<?php echo lang('added'); ?>' : '<?php echo lang('withdrawn'); ?>'}</span></td>
-                    <td data-label="<?php echo lang('amount'); ?>" style="font-weight:600;color:${t.type === 'add' ? 'var(--success)' : 'var(--danger)'};">${t.type === 'add' ? '+' : '-'}${money(t.amount)}</td>
-                    <td data-label="<?php echo lang('note'); ?>">${t.note ? t.note : '<span class="text-muted">—</span>'}</td>
-                    <td data-label="<?php echo lang('by'); ?>">${t.user_name ? t.user_name : '<span class="text-muted">—</span>'}</td>
-                    <td data-label="<?php echo lang('date'); ?>">${formatDate(t.created_at)}</td>
+                    <td><span class="${t.type === 'add' ? 'cash-type-badge-add' : 'cash-type-badge-withdraw'}">${t.type === 'add' ? '<?php echo lang('added'); ?>' : '<?php echo lang('withdrawn'); ?>'}</span></td>
+                    <td style="font-weight:600;color:${t.type === 'add' ? 'var(--success)' : 'var(--danger)'};">${t.type === 'add' ? '+' : '-'}${money(t.amount)}</td>
+                    <td>${t.note ? t.note : '<span class="text-muted">—</span>'}</td>
+                    <td>${t.user_name ? t.user_name : '<span class="text-muted">—</span>'}</td>
+                    <td>${formatDate(t.created_at)}</td>
                 </tr>
             `).join('');
         } catch (err) {
@@ -722,10 +634,10 @@ $currentLang = $_SESSION['language'] ?? 'en';
 
             tbody.innerHTML = result.data.map(u => `
                 <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${u.full_name}${u.id === result.current_user_id ? '<span class="user-you-badge"><?php echo lang('you'); ?></span>' : ''}</td>
-                    <td data-label="<?php echo lang('username'); ?>">${u.username}</td>
-                    <td data-label="<?php echo lang('joined'); ?>">${formatDate(u.created_at)}</td>
-                    <td data-label="<?php echo lang('action'); ?>">
+                    <td style="font-weight:500;">${u.full_name}${u.id === result.current_user_id ? '<span class="user-you-badge"><?php echo lang('you'); ?></span>' : ''}</td>
+                    <td>${u.username}</td>
+                    <td>${formatDate(u.created_at)}</td>
+                    <td>
                         <div class="d-flex gap-2 justify-content-end">
                             <button class="icon-btn ck-btn-outline" onclick='openEditUser(${JSON.stringify(u)})'><i class="fa-solid fa-pen"></i></button>
                             ${u.id !== result.current_user_id ? `<button class="icon-btn ck-btn-danger-soft" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -819,28 +731,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
         } catch (err) { ckToast('error', 'Failed to delete user'); }
     };
 
-    /* ============ LANGUAGE SWITCH ============ */
-    document.querySelectorAll('.lang-option').forEach(opt => {
-        opt.addEventListener('click', async function () {
-            const lang = this.dataset.lang;
-            if (this.classList.contains('active')) return;
-            try {
-                const res = await fetch('api/settings/language.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: lang })
-                });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    ckToast('success', result.message);
-                    setTimeout(() => window.location.href = 'index.php#settings', 500);
-                } else {
-                    ckToast('error', result.message);
-                }
-            } catch (err) {
-                ckToast('error', 'Failed to change language');
-            }
-        });
-    });
-
     /* ============ CUSTOMERS LIST ============ */
     async function loadCustomers(search = '') {
         const tbody = document.getElementById('customerTableBody');
@@ -853,10 +743,10 @@ $currentLang = $_SESSION['language'] ?? 'en';
             }
             tbody.innerHTML = result.data.map(c => `
                 <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${c.name}</td>
-                    <td data-label="<?php echo lang('mobile'); ?>">${c.mobile}</td>
-                    <td data-label="<?php echo lang('customer_due'); ?>" style="font-weight:600;color:${c.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(c.due)}</td>
-                    <td data-label="<?php echo lang('action'); ?>">
+                    <td style="font-weight:500;">${c.name}</td>
+                    <td>${c.mobile}</td>
+                    <td style="font-weight:600;color:${c.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(c.due)}</td>
+                    <td>
                         <div class="d-flex gap-2 justify-content-end">
                             ${c.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openCustomerPayment(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.due})"><i class="fa-solid fa-hand-holding-dollar"></i> <?php echo lang('receive_payment'); ?></button>` : ''}
                             <button class="icon-btn ck-btn-danger-soft" onclick="deleteCustomer(${c.id})"><i class="fa-solid fa-trash"></i></button>
@@ -925,10 +815,10 @@ $currentLang = $_SESSION['language'] ?? 'en';
             }
             tbody.innerHTML = result.data.map(s => `
                 <tr>
-                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${s.name}</td>
-                    <td data-label="<?php echo lang('mobile'); ?>">${s.mobile}</td>
-                    <td data-label="<?php echo lang('supplier_due'); ?>" style="font-weight:600;color:${s.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(s.due)}</td>
-                    <td data-label="<?php echo lang('action'); ?>">
+                    <td style="font-weight:500;">${s.name}</td>
+                    <td>${s.mobile}</td>
+                    <td style="font-weight:600;color:${s.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(s.due)}</td>
+                    <td>
                         <div class="d-flex gap-2 justify-content-end">
                             ${s.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openSupplierPayment(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.due})"><i class="fa-solid fa-money-bill-transfer"></i> <?php echo lang('make_payment'); ?></button>` : ''}
                             <button class="icon-btn ck-btn-danger-soft" onclick="deleteSupplier(${s.id})"><i class="fa-solid fa-trash"></i></button>
@@ -985,91 +875,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
         } catch (err) { ckToast('error', 'Failed to delete supplier'); }
     };
 
-    /* ============ DATA: BACKUP ============ */
-    document.getElementById('btnDownloadBackup').addEventListener('click', () => {
-        window.location.href = 'api/settings/backup.php';
-    });
-
-    /* ============ DATA: IMPORT ============ */
-    document.getElementById('btnImportData').addEventListener('click', () => {
-        document.getElementById('importFileInput').click();
-    });
-
-    document.getElementById('importFileInput').addEventListener('change', async function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const confirmResult = await ckConfirm('এই ফাইলের Data দিয়ে বর্তমান সমস্ত Data প্রতিস্থাপিত হবে।');
-        if (!confirmResult.isConfirmed) { this.value = ''; return; }
-
-        try {
-            const text = await file.text();
-            const jsonData = JSON.parse(text);
-
-            const res = await fetch('api/settings/import.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(jsonData)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                if (result.force_logout) {
-                    setTimeout(() => window.location.href = 'login.php', 1500);
-                } else {
-                    setTimeout(() => window.location.href = 'index.php#settings', 1200);
-                }
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) {
-            ckToast('error', 'Invalid backup file');
-        } finally {
-            this.value = '';
-        }
-    });
-
-    /* ============ DATA: DELETE ALL ============ */
-    document.getElementById('btnOpenDeleteAll').addEventListener('click', () => {
-        document.getElementById('deleteAllForm').reset();
-        document.getElementById('deleteAllOverlay').style.display = 'flex';
-    });
-
-    document.getElementById('deleteAllForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const confirmResult = await ckConfirm('এই কাজটি আর ফেরত আনা যাবে না। আপনি কি সম্পূর্ণ নিশ্চিত?');
-        if (!confirmResult.isConfirmed) return;
-
-        const payload = {
-            password1: document.getElementById('deletePassword1').value,
-            password2: document.getElementById('deletePassword2').value
-        };
-
-        const btn = document.getElementById('deleteAllSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
-            const res = await fetch('api/settings/delete_all.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                ckToast('success', result.message);
-                document.getElementById('deleteAllOverlay').style.display = 'none';
-                setTimeout(() => window.location.href = 'index.php#dashboard', 1000);
-            } else {
-                ckToast('error', result.message);
-            }
-        } catch (err) {
-            ckToast('error', 'Failed to delete data');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<?php echo lang('delete_permanently'); ?>';
-        }
-    });
-
     /* ============ CLOSE MODALS ============ */
     document.querySelectorAll('[data-close], .ck-modal-close').forEach(el => {
         el.addEventListener('click', function () {
@@ -1078,7 +883,6 @@ $currentLang = $_SESSION['language'] ?? 'en';
         });
     });
 
-    /* Overlay-এর বাইরে ক্লিক করলে বন্ধ হবে */
     document.querySelectorAll('.ck-modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', function (e) {
             if (e.target === overlay) overlay.style.display = 'none';
@@ -1099,5 +903,11 @@ $currentLang = $_SESSION['language'] ?? 'en';
         const val = this.value;
         suppTimer = setTimeout(() => loadSuppliers(val), 350);
     });
+
+    /* বাইরের কোনো Page থেকে সরাসরি একটা নির্দিষ্ট Modal খুলতে চাইলে */
+    window.openSettingsModal = function (modalId) {
+        const tabBtn = document.querySelector('.settings-tab[data-modal="' + modalId + '"]');
+        if (tabBtn) tabBtn.click();
+    };
 })();
 </script>
