@@ -43,7 +43,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
         <div class="ck-card recent-card">
             <div class="d-flex justify-content-between align-items-center mb-3 recent-card-head">
                 <h6 class="mb-0" style="font-weight:600;"><?php echo lang('recent_sales'); ?></h6>
-                <i class="fa-solid fa-tags recent-nav-icon" id="goToSales" title="View Sales List"></i>
+                <i class="fa-solid fa-tags recent-nav-icon" id="goToSales" title="View Sales History"></i>
             </div>
             <div class="recent-scroll-body" id="recentSalesList"></div>
         </div>
@@ -132,6 +132,118 @@ require_once __DIR__ . '/../includes/auth_check.php';
     </div>
 </div>
 
+<!-- ============ MODAL: CUSTOMER LIST (Direct Popup — Settings-এ যেতে হবে না) ============ -->
+<div class="ck-modal-overlay" id="customerListOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:640px;">
+        <div class="ck-modal-header">
+            <h5><?php echo lang('customer'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="customerListOverlay"></i>
+        </div>
+        <div class="ck-card mb-3">
+            <div class="input-group-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="clSearchInput" placeholder="<?php echo lang('search'); ?> customers...">
+            </div>
+        </div>
+        <div class="ck-card p-0">
+            <div class="fixed-scroll-area-cl">
+                <table class="ck-table">
+                    <thead>
+                        <tr>
+                            <th><?php echo lang('name'); ?></th>
+                            <th><?php echo lang('mobile'); ?></th>
+                            <th><?php echo lang('customer_due'); ?></th>
+                            <th><?php echo lang('action'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="clTableBody">
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODAL: SUPPLIER LIST (Direct Popup) ============ -->
+<div class="ck-modal-overlay" id="supplierListOverlay" style="display:none;">
+    <div class="ck-modal-box" style="max-width:640px;">
+        <div class="ck-modal-header">
+            <h5><?php echo lang('supplier'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="supplierListOverlay"></i>
+        </div>
+        <div class="ck-card mb-3">
+            <div class="input-group-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="slSearchInput" placeholder="<?php echo lang('search'); ?> suppliers...">
+            </div>
+        </div>
+        <div class="ck-card p-0">
+            <div class="fixed-scroll-area-cl">
+                <table class="ck-table">
+                    <thead>
+                        <tr>
+                            <th><?php echo lang('name'); ?></th>
+                            <th><?php echo lang('mobile'); ?></th>
+                            <th><?php echo lang('supplier_due'); ?></th>
+                            <th><?php echo lang('action'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="slTableBody">
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SUB-MODAL: RECEIVE PAYMENT (CUSTOMER) ============ -->
+<div class="ck-modal-overlay" id="clPaymentOverlay" style="display:none;z-index:2100;">
+    <div class="ck-modal-box" style="max-width:400px;">
+        <div class="ck-modal-header">
+            <h5><?php echo lang('receive_payment'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="clPaymentOverlay"></i>
+        </div>
+        <form id="clPaymentForm">
+            <input type="hidden" id="clPaymentCustomerId">
+            <p style="font-size:13px;"><?php echo lang('customer'); ?>: <strong id="clPaymentCustomerName"></strong></p>
+            <p class="text-muted" style="font-size:12px;"><?php echo lang('current_due'); ?>: <span id="clPaymentCustomerDue" style="font-weight:600;color:var(--danger);"></span></p>
+
+            <label class="ck-label mt-2"><?php echo lang('amount'); ?></label>
+            <input type="number" step="0.01" min="0.01" class="ck-input" id="clPaymentAmount" required>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="clPaymentOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ SUB-MODAL: MAKE PAYMENT (SUPPLIER) ============ -->
+<div class="ck-modal-overlay" id="slPaymentOverlay" style="display:none;z-index:2100;">
+    <div class="ck-modal-box" style="max-width:400px;">
+        <div class="ck-modal-header">
+            <h5><?php echo lang('make_payment'); ?></h5>
+            <i class="fa-solid fa-xmark ck-modal-close" data-close="slPaymentOverlay"></i>
+        </div>
+        <form id="slPaymentForm">
+            <input type="hidden" id="slPaymentSupplierId">
+            <p style="font-size:13px;"><?php echo lang('supplier'); ?>: <strong id="slPaymentSupplierName"></strong></p>
+            <p class="text-muted" style="font-size:12px;"><?php echo lang('current_due'); ?>: <span id="slPaymentSupplierDue" style="font-weight:600;color:var(--danger);"></span></p>
+
+            <label class="ck-label mt-2"><?php echo lang('amount'); ?></label>
+            <input type="number" step="0.01" min="0.01" class="ck-input" id="slPaymentAmount" required>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="ck-btn ck-btn-outline flex-fill justify-content-center" data-close="slPaymentOverlay"><?php echo lang('cancel'); ?></button>
+                <button type="submit" class="ck-btn ck-btn-primary flex-fill justify-content-center"><?php echo lang('save'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ============ PAGE-SPECIFIC STYLES ============ -->
 <style>
     /* ============ পুরো Page Exactly Display-এর সমান Height-এ Fix ============ */
@@ -186,30 +298,17 @@ require_once __DIR__ . '/../includes/auth_check.php';
     .summary-card .sc-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .summary-card .sc-value { font-size: 16px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ============ Recent Grid: বাকি জায়গা নিবে, ভেতরে Scroll ============ */
+    /* ============ Recent Grid ============ */
     .recent-grid {
-        flex: 1 1 auto;
-        min-height: 0;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 6px;
+        flex: 1 1 auto; min-height: 0; display: grid;
+        grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px;
     }
-    .recent-card {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        height: 100%;
-    }
+    .recent-card { display: flex; flex-direction: column; overflow: hidden; height: 100%; }
     .recent-card-head { flex-shrink: 0; }
     .recent-scroll-body {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-right: 4px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        flex: 1 1 auto; min-height: 0; overflow-y: auto;
+        -webkit-overflow-scrolling: touch; padding-right: 4px;
+        scrollbar-width: none; -ms-overflow-style: none;
     }
     .recent-scroll-body::-webkit-scrollbar { display: none; }
 
@@ -219,6 +318,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
         border-radius: 8px;
     }
     .recent-nav-icon:hover { color: var(--primary-blue); background: var(--light-blue); }
+
+    /* ============ Customer/Supplier List Modal Scroll (Scrollbar লুকানো) ============ */
+    .fixed-scroll-area-cl {
+        max-height: 400px; overflow-y: auto;
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .fixed-scroll-area-cl::-webkit-scrollbar { display: none; }
 
     @media (max-width: 767px) {
         .dash-header-text h4 { font-size: 16px; }
@@ -232,12 +338,8 @@ require_once __DIR__ . '/../includes/auth_check.php';
         .summary-card .sc-value { font-size: 11px; }
 
         .recent-grid {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            gap: 12px;
-            padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            gap: 12px; padding-bottom: 4px; -webkit-overflow-scrolling: touch;
         }
         .recent-grid > .recent-card { flex: 0 0 100%; scroll-snap-align: start; }
     }
@@ -266,18 +368,9 @@ require_once __DIR__ . '/../includes/auth_check.php';
         { key: 'total_expenses', label: '<?php echo lang('total_expenses'); ?>', icon: 'fa-receipt',       color: '#0891b2', bg: '#ecfeff', type: 'expenses' }
     ];
 
-    /* Settings এখন Popup-System, তাই এখানে সরাসরি Modal ID রাখা হয়েছে (Tab Name না) */
-    const viewListMap = {
-        purchase:     { page: 'purchase' },
-        sales:        { page: 'sales' },
-        profit:       { page: 'sales' },
-        expenses:     { page: 'expenses' },
-        customer_due: { page: 'settings', tab: 'customersModal' },
-        supplier_due: { page: 'settings', tab: 'suppliersModal' }
-    };
-
     let dashboardChart = null;
     let currentPeriod = 'today';
+    let currentChartType = 'sales';
 
     function money(v) {
         return '৳' + parseFloat(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -292,15 +385,17 @@ require_once __DIR__ . '/../includes/auth_check.php';
         return Math.floor(diff / 86400) + 'd ago';
     }
 
-    /* Settings এখন Popup-System, তাই Page Load করার পর সরাসরি সেই Modal Open করা হয় */
-    function goToSettingsModal(modalId) {
-        loadPage('settings').then(() => {
+    /* ============ Sales Page-এ গিয়ে সরাসরি History View-এ যাওয়া ============ */
+    function goToSalesHistory() {
+        loadPage('sales').then(() => {
             setTimeout(() => {
-                if (window.openSettingsModal) window.openSettingsModal(modalId);
+                const btn = document.getElementById('btnToggleHistory');
+                if (btn) btn.click();
             }, 300);
         });
     }
 
+    /* ============ DASHBOARD DATA LOAD ============ */
     async function loadDashboard(period) {
         if (period) currentPeriod = period;
 
@@ -336,11 +431,14 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
             updateCashBalance(data.cash_balance);
 
+            /* ============ Recent Purchase: due_amount দিয়ে Badge (payment_type নয়) ============ */
             const purchaseBox = document.getElementById('recentPurchaseList');
             if (data.recent_purchases.length === 0) {
                 purchaseBox.innerHTML = `<p class="text-muted text-center py-4" style="font-size:13px;"><?php echo lang('no_data'); ?></p>`;
             } else {
-                purchaseBox.innerHTML = data.recent_purchases.map(p => `
+                purchaseBox.innerHTML = data.recent_purchases.map(p => {
+                    const isDue = parseFloat(p.due_amount) > 0;
+                    return `
                     <div class="list-row">
                         <div>
                             <div class="lr-title">${p.product_name}</div>
@@ -348,17 +446,21 @@ require_once __DIR__ . '/../includes/auth_check.php';
                         </div>
                         <div class="text-end">
                             <div class="lr-amount">${money(p.total_amount)}</div>
-                            <span class="${p.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${p.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span>
+                            <span class="${isDue ? 'badge-due' : 'badge-cash'}">${isDue ? '<?php echo lang('due'); ?>' : '<?php echo lang('cash'); ?>'}</span>
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             }
 
+            /* ============ Recent Sales: due_amount দিয়ে Badge (payment_type নয়) ============ */
             const salesBox = document.getElementById('recentSalesList');
             if (data.recent_sales.length === 0) {
                 salesBox.innerHTML = `<p class="text-muted text-center py-4" style="font-size:13px;"><?php echo lang('no_data'); ?></p>`;
             } else {
-                salesBox.innerHTML = data.recent_sales.map(s => `
+                salesBox.innerHTML = data.recent_sales.map(s => {
+                    const isDue = parseFloat(s.due_amount) > 0;
+                    return `
                     <div class="list-row">
                         <div>
                             <div class="lr-title">${s.product_name}</div>
@@ -366,10 +468,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
                         </div>
                         <div class="text-end">
                             <div class="lr-amount">${money(s.total_amount)}</div>
-                            <span class="${s.payment_type === 'cash' ? 'badge-cash' : 'badge-due'}">${s.payment_type === 'cash' ? '<?php echo lang('cash'); ?>' : '<?php echo lang('due'); ?>'}</span>
+                            <span class="${isDue ? 'badge-due' : 'badge-cash'}">${isDue ? '<?php echo lang('due'); ?>' : '<?php echo lang('cash'); ?>'}</span>
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             }
         } catch (err) {
             ckToast('error', 'Something went wrong while loading dashboard');
@@ -381,8 +484,9 @@ require_once __DIR__ . '/../includes/auth_check.php';
     });
 
     document.getElementById('goToPurchase').addEventListener('click', () => loadPage('purchase'));
-    document.getElementById('goToSales').addEventListener('click', () => loadPage('sales'));
+    document.getElementById('goToSales').addEventListener('click', () => goToSalesHistory());
 
+    /* ============ ADD CUSTOMER / SUPPLIER ============ */
     document.getElementById('btnAddCustomer').addEventListener('click', () => {
         document.getElementById('addCustomerOverlay').style.display = 'flex';
     });
@@ -395,14 +499,19 @@ require_once __DIR__ . '/../includes/auth_check.php';
             if (target) document.getElementById(target).style.display = 'none';
         });
     });
+    document.querySelectorAll('.ck-modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) overlay.style.display = 'none';
+        });
+    });
 
     document.getElementById('btnGoCustomerList').addEventListener('click', () => {
         document.getElementById('addCustomerOverlay').style.display = 'none';
-        goToSettingsModal('customersModal');
+        openCustomerListModal();
     });
     document.getElementById('btnGoSupplierList').addEventListener('click', () => {
         document.getElementById('addSupplierOverlay').style.display = 'none';
-        goToSettingsModal('suppliersModal');
+        openSupplierListModal();
     });
 
     document.getElementById('addCustomerForm').addEventListener('submit', async function (e) {
@@ -453,8 +562,193 @@ require_once __DIR__ . '/../includes/auth_check.php';
         }
     });
 
-    let currentChartType = 'sales';
+    /* ============ CUSTOMER LIST MODAL (Direct Popup) ============ */
+    window.openCustomerListModal = function () {
+        document.getElementById('customerListOverlay').style.display = 'flex';
+        loadCustomerListModal();
+    };
 
+    async function loadCustomerListModal(search = '') {
+        const tbody = document.getElementById('clTableBody');
+        try {
+            const res = await fetch('api/customer/list.php?search=' + encodeURIComponent(search));
+            const result = await res.json();
+            if (result.status !== 'success' || result.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = result.data.map(c => `
+                <tr>
+                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${c.name}</td>
+                    <td data-label="<?php echo lang('mobile'); ?>">${c.mobile}</td>
+                    <td data-label="<?php echo lang('customer_due'); ?>" style="font-weight:600;color:${c.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(c.due)}</td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <div class="d-flex gap-2 justify-content-end">
+                            ${c.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openClPayment(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.due})"><i class="fa-solid fa-hand-holding-dollar"></i> <?php echo lang('receive_payment'); ?></button>` : ''}
+                            <button class="icon-btn ck-btn-danger-soft" onclick="deleteClCustomer(${c.id}, ${c.due})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error</td></tr>`;
+        }
+    }
+
+    window.openClPayment = function (id, name, due) {
+        document.getElementById('clPaymentCustomerId').value = id;
+        document.getElementById('clPaymentCustomerName').textContent = name;
+        document.getElementById('clPaymentCustomerDue').textContent = money(due);
+        document.getElementById('clPaymentAmount').value = '';
+        document.getElementById('clPaymentAmount').max = due;
+        document.getElementById('clPaymentOverlay').style.display = 'flex';
+    };
+
+    document.getElementById('clPaymentForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            customer_id: document.getElementById('clPaymentCustomerId').value,
+            amount: document.getElementById('clPaymentAmount').value
+        };
+        try {
+            const res = await fetch('api/customer/payment.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('clPaymentOverlay').style.display = 'none';
+                updateCashBalance(result.cash_balance);
+                loadCustomerListModal(document.getElementById('clSearchInput').value);
+                loadDashboard();
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) { ckToast('error', 'Failed to process payment'); }
+    });
+
+    window.deleteClCustomer = async function (id, due) {
+        if (due > 0) {
+            ckToast('warning', 'Cannot delete: this customer has pending due. Clear due first.');
+            return;
+        }
+        const confirmResult = await ckConfirm('This customer will be permanently deleted.');
+        if (!confirmResult.isConfirmed) return;
+        try {
+            const res = await fetch('api/customer/delete.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                loadCustomerListModal(document.getElementById('clSearchInput').value);
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) { ckToast('error', 'Failed to delete customer'); }
+    };
+
+    let clSearchTimer;
+    document.getElementById('clSearchInput').addEventListener('input', function () {
+        clearTimeout(clSearchTimer);
+        const val = this.value;
+        clSearchTimer = setTimeout(() => loadCustomerListModal(val), 350);
+    });
+
+    /* ============ SUPPLIER LIST MODAL (Direct Popup) ============ */
+    window.openSupplierListModal = function () {
+        document.getElementById('supplierListOverlay').style.display = 'flex';
+        loadSupplierListModal();
+    };
+
+    async function loadSupplierListModal(search = '') {
+        const tbody = document.getElementById('slTableBody');
+        try {
+            const res = await fetch('api/supplier/list.php?search=' + encodeURIComponent(search));
+            const result = await res.json();
+            if (result.status !== 'success' || result.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><?php echo lang('no_data'); ?></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = result.data.map(s => `
+                <tr>
+                    <td data-label="<?php echo lang('name'); ?>" style="font-weight:500;">${s.name}</td>
+                    <td data-label="<?php echo lang('mobile'); ?>">${s.mobile}</td>
+                    <td data-label="<?php echo lang('supplier_due'); ?>" style="font-weight:600;color:${s.due > 0 ? 'var(--danger)' : 'var(--success)'};">${money(s.due)}</td>
+                    <td data-label="<?php echo lang('action'); ?>">
+                        <div class="d-flex gap-2 justify-content-end">
+                            ${s.due > 0 ? `<button class="ck-btn ck-btn-primary" style="padding:6px 12px;font-size:11px;" onclick="openSlPayment(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.due})"><i class="fa-solid fa-money-bill-transfer"></i> <?php echo lang('make_payment'); ?></button>` : ''}
+                            <button class="icon-btn ck-btn-danger-soft" onclick="deleteSlSupplier(${s.id}, ${s.due})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error</td></tr>`;
+        }
+    }
+
+    window.openSlPayment = function (id, name, due) {
+        document.getElementById('slPaymentSupplierId').value = id;
+        document.getElementById('slPaymentSupplierName').textContent = name;
+        document.getElementById('slPaymentSupplierDue').textContent = money(due);
+        document.getElementById('slPaymentAmount').value = '';
+        document.getElementById('slPaymentAmount').max = due;
+        document.getElementById('slPaymentOverlay').style.display = 'flex';
+    };
+
+    document.getElementById('slPaymentForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+            supplier_id: document.getElementById('slPaymentSupplierId').value,
+            amount: document.getElementById('slPaymentAmount').value
+        };
+        try {
+            const res = await fetch('api/supplier/payment.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                document.getElementById('slPaymentOverlay').style.display = 'none';
+                updateCashBalance(result.cash_balance);
+                loadSupplierListModal(document.getElementById('slSearchInput').value);
+                loadDashboard();
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) { ckToast('error', 'Failed to process payment'); }
+    });
+
+    window.deleteSlSupplier = async function (id, due) {
+        if (due > 0) {
+            ckToast('warning', 'Cannot delete: this supplier has pending due. Clear due first.');
+            return;
+        }
+        const confirmResult = await ckConfirm('This supplier will be permanently deleted.');
+        if (!confirmResult.isConfirmed) return;
+        try {
+            const res = await fetch('api/supplier/delete.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                ckToast('success', result.message);
+                loadSupplierListModal(document.getElementById('slSearchInput').value);
+            } else {
+                ckToast('error', result.message);
+            }
+        } catch (err) { ckToast('error', 'Failed to delete supplier'); }
+    };
+
+    let slSearchTimer;
+    document.getElementById('slSearchInput').addEventListener('input', function () {
+        clearTimeout(slSearchTimer);
+        const val = this.value;
+        slSearchTimer = setTimeout(() => loadSupplierListModal(val), 350);
+    });
+
+    /* ============ CHART MODAL ============ */
     async function openChartModal(type, label) {
         currentChartType = type;
         document.getElementById('chartModalTitle').textContent = label;
@@ -462,21 +756,41 @@ require_once __DIR__ . '/../includes/auth_check.php';
         document.querySelectorAll('.ck-filter-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('.ck-filter-btn[data-days="7"]').classList.add('active');
 
-        const target = viewListMap[type];
-        document.getElementById('chartViewListText').textContent = target.tab
-            ? 'View List'
-            : 'View List';
+        const listLabels = {
+            purchase: 'View Purchase List',
+            sales: 'View Sales History',
+            profit: 'View Sales History',
+            expenses: 'View Expense List',
+            customer_due: 'View Customer List',
+            supplier_due: 'View Supplier List'
+        };
+        document.getElementById('chartViewListText').textContent = listLabels[type] || 'View List';
 
+        /* Modal ঠিকভাবে Visible হওয়ার একটু পরে Chart তৈরি করা হচ্ছে —
+           নাহলে Canvas Hidden অবস্থায় Size ০ পেয়ে ভাঙা Chart দেখাত */
+        await new Promise(resolve => setTimeout(resolve, 60));
         await renderChart(type, 7);
     }
 
     document.getElementById('chartViewListBtn').addEventListener('click', function () {
         document.getElementById('chartOverlay').style.display = 'none';
-        const target = viewListMap[currentChartType];
-        if (target.tab) {
-            goToSettingsModal(target.tab);
-        } else {
-            loadPage(target.page);
+        switch (currentChartType) {
+            case 'purchase':
+                loadPage('purchase');
+                break;
+            case 'sales':
+            case 'profit':
+                goToSalesHistory();
+                break;
+            case 'expenses':
+                loadPage('expenses');
+                break;
+            case 'customer_due':
+                openCustomerListModal();
+                break;
+            case 'supplier_due':
+                openSupplierListModal();
+                break;
         }
     });
 
@@ -494,8 +808,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
             const result = await res.json();
             if (result.status !== 'success') { ckToast('error', 'Failed to load chart data'); return; }
 
-            const ctx = document.getElementById('dashboardChartCanvas').getContext('2d');
-            if (dashboardChart) dashboardChart.destroy();
+            const canvas = document.getElementById('dashboardChartCanvas');
+            const ctx = canvas.getContext('2d');
+
+            if (dashboardChart) {
+                dashboardChart.destroy();
+                dashboardChart = null;
+            }
 
             const total = result.values.reduce((a, b) => a + b, 0);
             document.getElementById('chartSummaryBox').textContent =
@@ -517,10 +836,19 @@ require_once __DIR__ . '/../includes/auth_check.php';
                     scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
                 }
             });
+
+            /* Resize এর মাধ্যমে নিশ্চিত করা হচ্ছে Chart সঠিক Dimension ব্যবহার করছে */
+            requestAnimationFrame(() => { if (dashboardChart) dashboardChart.resize(); });
         } catch (err) {
             ckToast('error', 'Something went wrong while loading chart');
         }
     }
+
+    window.addEventListener('resize', function () {
+        if (dashboardChart && document.getElementById('chartOverlay').style.display === 'flex') {
+            dashboardChart.resize();
+        }
+    });
 
     loadDashboard('today');
 })();
