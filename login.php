@@ -191,6 +191,10 @@ if (isset($_SESSION['user_id'])) {
         .login-right {
             padding: 40px 26px;
         }
+        .login-right h2,
+        .login-right p.subtitle {
+            text-align: center;
+        }
     }
 </style>
 </head>
