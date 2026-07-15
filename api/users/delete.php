@@ -3,6 +3,11 @@ require_once __DIR__ . '/../../includes/auth_check.php';
 require_once __DIR__ . '/../../config/db.php';
 header('Content-Type: application/json');
 
+if (!isAdmin()) {
+    echo json_encode(["status" => "error", "message" => "Only admin can delete users"]);
+    exit;
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 $id = (int) ($input['id'] ?? 0);
 
@@ -21,6 +26,18 @@ try {
     if ($totalUsers <= 1) {
         echo json_encode(["status" => "error", "message" => "At least one user must remain"]);
         exit;
+    }
+
+    $target = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+    $target->execute([$id]);
+    $targetRole = $target->fetchColumn();
+
+    if ($targetRole === 'admin') {
+        $adminCount = $pdo->query("SELECT COUNT(*) AS cnt FROM users WHERE role = 'admin'")->fetch()['cnt'];
+        if ($adminCount <= 1) {
+            echo json_encode(["status" => "error", "message" => "At least one admin must remain"]);
+            exit;
+        }
     }
 
     $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);

@@ -47,8 +47,11 @@ try {
     $supplierDue = $pdo->query("SELECT COALESCE(SUM(due),0) AS val FROM suppliers")->fetch()['val'];
 
     // ============ Recent Purchase/Sales — সবসময় সাম্প্রতিক ১০টা (Scrollable List) ============
+    // FIX: due_amount ও paid_amount কলাম আগে সিলেক্ট হতো না, তাই Recent তালিকায়
+    // বাকিতে কেনা/বেচা হলেও সবসময় "Cash" Badge দেখাচ্ছিল। এখন যোগ করা হলো।
     $recentPurchases = $pdo->query("
-        SELECT pu.id, pr.name AS product_name, pu.quantity, pu.total_amount, pu.payment_type, pu.created_at,
+        SELECT pu.id, pr.name AS product_name, pu.quantity, pu.total_amount,
+               pu.paid_amount, pu.due_amount, pu.payment_type, pu.created_at,
                s.name AS supplier_name
         FROM purchases pu
         INNER JOIN products pr ON pr.id = pu.product_id
@@ -58,7 +61,8 @@ try {
     ")->fetchAll();
 
     $recentSales = $pdo->query("
-        SELECT sl.id, pr.name AS product_name, sl.quantity, sl.total_amount, sl.payment_type, sl.created_at,
+        SELECT sl.id, pr.name AS product_name, sl.quantity, sl.total_amount,
+               sl.paid_amount, sl.due_amount, sl.payment_type, sl.created_at,
                c.name AS customer_name
         FROM sales sl
         INNER JOIN products pr ON pr.id = sl.product_id

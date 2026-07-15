@@ -23,6 +23,7 @@ try {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['role'] = $user['role'] ?? 'staff';
 
         // Load language preference from settings
         $langStmt = $pdo->query("SELECT language FROM settings LIMIT 1");

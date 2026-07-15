@@ -41,3 +41,11 @@ function lang($key)
     }
     return $strings[$key] ?? $key;
 }
+
+/**
+ * Helper function - বর্তমান লগইন করা ইউজার Admin কিনা চেক করে
+ */
+function isAdmin()
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}

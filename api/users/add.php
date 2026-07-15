@@ -8,10 +8,20 @@ $input = json_decode(file_get_contents('php://input'), true);
 $username = trim($input['username'] ?? '');
 $password = trim($input['password'] ?? '');
 $fullName = trim($input['full_name'] ?? '');
+$role     = trim($input['role'] ?? 'staff');
 
 if ($username === '' || $password === '' || $fullName === '') {
     echo json_encode(["status" => "error", "message" => "All fields are required"]);
     exit;
+}
+
+if (!in_array($role, ['admin', 'staff'], true)) {
+    $role = 'staff';
+}
+
+// শুধু Admin-ই নতুন Admin ইউজার তৈরি করতে পারবে; Staff শুধু Staff-ই তৈরি করতে পারবে
+if (!isAdmin()) {
+    $role = 'staff';
 }
 
 try {
@@ -22,8 +32,8 @@ try {
         exit;
     }
 
-    $stmt = $pdo->prepare("INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)");
-    $stmt->execute([$username, $password, $fullName]);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password, full_name, role) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$username, $password, $fullName, $role]);
 
     echo json_encode([
         "status" => "success",
@@ -31,7 +41,8 @@ try {
         "data" => [
             "id" => $pdo->lastInsertId(),
             "username" => $username,
-            "full_name" => $fullName
+            "full_name" => $fullName,
+            "role" => $role
         ]
     ]);
 } catch (Exception $e) {

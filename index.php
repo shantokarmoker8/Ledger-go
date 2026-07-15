@@ -17,7 +17,7 @@ $currentLang = $_SESSION['language'] ?? 'en';
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link rel="shortcut icon" href="./assets/logo.png" type="image/x-icon">
 <style>
     :root {
         --primary-blue: #2563eb;
